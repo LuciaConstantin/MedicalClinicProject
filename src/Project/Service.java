@@ -1,14 +1,12 @@
 package Project;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Service {
     private static Service controller = null;
-    private List <Appointment> appointments;
+    private List<Appointment> appointments;
     private Set<Doctor> doctors;
     private Set<Patient> patients;
 
@@ -24,89 +22,190 @@ public class Service {
         return controller;
     }
 
-    public Appointment findAppointment(int appointmentId){
+    public Appointment findAppointment(int appointmentId) {
         return appointments.stream().filter(appointment -> appointment.getAppointmentId() == appointmentId).findFirst().orElse(null);
 
     }
 
-    public void addDoctor(Doctor doctor) {
-
-        doctors.add(doctor);
-    }
-
-    public void addPatient(Patient patient) {
-        patients.add(patient);
-    }
-
 
     public void addAppointment(Appointment appointment) {
-        for (Appointment app : appointments) {
-            if (app.equals(appointment)) {
-                System.out.println("Appointment already exists");
+        try {
+            for (Appointment app : appointments) {
+                if (app.equals(appointment)) {
+                    System.out.println("Appointment already exists");
+                    return;
+                }
+            }
+
+            if (!doctors.contains(appointment.getDoctor())) {
+                System.out.println("Doctor doesn't exist");
                 return;
             }
-        }
 
-        if(!doctors.contains(appointment.getDoctor())) {
-            System.out.println("Doctor doesn't exist");
-            return;
-        }
-
-        if(!patients.contains(appointment.getPatient())) {
-            System.out.println("Patient doesn't exist");
-            return;
-        }
-
-        int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
-        TimeInterval[] doctorSchedule = appointment.getDoctor().getSchedule().getSchedule()[appointmentDay];
-
-        if (doctorSchedule.length == 0) {
-            System.out.println("The doctor does not work on this day, appointment failed");
-            return;
-        }
-
-        boolean goodInterval = false;
-        LocalTime appointmentStart = appointment.getAppointmentInterval().start();
-        LocalTime appointmentEnd = appointment.getAppointmentInterval().end();
-
-        for (TimeInterval workInterval : doctorSchedule) {
-            LocalTime workStart = workInterval.start();
-            LocalTime workEnd = workInterval.end();
-
-            if (!appointmentStart.isBefore(workStart) && !appointmentEnd.isAfter(workEnd)) {
-                goodInterval = true;
-                break;
-            }
-        }
-
-        if (!goodInterval) {
-            System.out.println("The appointment interval is not within the doctor's working hours, appointment failed");
-            return;
-        }
-
-        for (Appointment app : appointments) {
-            if (app.getDoctor().equals(appointment.getDoctor()) &&
-                    app.getAppointmentDate().equals(appointment.getAppointmentDate()) &&
-                    app.getAppointmentInterval().start().isBefore(appointment.getAppointmentInterval().end()) &&
-                    appointment.getAppointmentInterval().start().isBefore(app.getAppointmentInterval().end())) {
-                System.out.println("Appointment interval overlaps with another appointment");
+            if (!patients.contains(appointment.getPatient())) {
+                System.out.println("Patient doesn't exist");
                 return;
             }
+
+            int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
+            TimeInterval[] doctorSchedule = appointment.getDoctor().getSchedule().getSchedule()[appointmentDay];
+
+            if (doctorSchedule.length == 0) {
+                System.out.println("The doctor does not work on this day, appointment failed");
+                return;
+            }
+
+            boolean goodInterval = false;
+            LocalTime appointmentStart = appointment.getAppointmentInterval().start();
+            LocalTime appointmentEnd = appointment.getAppointmentInterval().end();
+
+            for (TimeInterval workInterval : doctorSchedule) {
+                LocalTime workStart = workInterval.start();
+                LocalTime workEnd = workInterval.end();
+
+                if (!appointmentStart.isBefore(workStart) && !appointmentEnd.isAfter(workEnd)) {
+                    goodInterval = true;
+                    break;
+                }
+            }
+
+            if (!goodInterval) {
+                System.out.println("The appointment interval is not within the doctor's working hours, appointment failed");
+                return;
+            }
+
+            for (Appointment app : appointments) {
+                if (app.getDoctor().equals(appointment.getDoctor()) &&
+                        app.getAppointmentDate().equals(appointment.getAppointmentDate()) &&
+                        app.getAppointmentInterval().start().isBefore(appointment.getAppointmentInterval().end()) &&
+                        appointment.getAppointmentInterval().start().isBefore(app.getAppointmentInterval().end())) {
+                    throw new AppointmentConflictException("Appointment interval overlaps with another appointment");
+                }
+            }
+
+            appointments.add(appointment);
+            System.out.println("Appointment successfully added!");
+
+        } catch (AppointmentConflictException | BadInterval e) {
+            System.out.println("Failed to add appointment: " + e.getMessage());
         }
 
-        appointments.add(appointment);
-        //patients.add(appointment.getPatient());
-
-        System.out.println("Appointment successfully added!");
     }
 
 
+    public void addDiagnostic(Appointment appointment) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Add a diagnostic to appointment");
+        System.out.println("Please enter the name of the diagnostic to be added: ");
+        String name = scanner.nextLine();
 
 
-    /*
+        List<Treatment> treatmentList = new ArrayList<>();
+
+        String verify = "0";
+        while (!verify.equals("q")) {
+            System.out.println("If the all the treatments were added, please enter q");
+            System.out.println("Please enter the type of the treatment to be added: \n" +
+                    "for Medication Treatment type m and for Physical Treatment type p");
+            verify = scanner.nextLine();
+
+            if (verify.equals("m")) {
+                try {
+                    System.out.println("Please enter the name of the treatment to be added: ");
+                    String medicationName = scanner.nextLine();
+                    System.out.println("Please enter the dosage: ");
+                    double dosage = Double.parseDouble(scanner.nextLine());
+                    System.out.println("Please enter the treatment interval: ");
+                    int treatmentInterval = Integer.parseInt(scanner.nextLine());
+                    Treatment medicalTreatment = new MedicationTreatment(medicationName, dosage, treatmentInterval);
+
+                    if (medicalTreatment.verifyTreatment(appointment.getPatient().getMedicalRecord())) {
+                        treatmentList.add(medicalTreatment);
+                    } else {
+                        System.out.println("The patient is allergic to: " + medicationName + " the medication won't be added");
+                    }
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            } else if (verify.equals("p")) {
+                try {
+                    System.out.println("Please add the exercise name: ");
+                    String exerciseName = scanner.nextLine();
+                    System.out.println("Please enter the sets for the exercise: ");
+                    int sets = Integer.parseInt(scanner.nextLine());
+                    System.out.println("Please enter the medical issue that is treated: ");
+                    String medicalIssue = scanner.nextLine();
+
+                    Treatment physiotherapyTreatment = new PhysiotherapyTreatment(exerciseName, sets, medicalIssue);
+
+                    if (physiotherapyTreatment.verifyTreatment(appointment.getPatient().getMedicalRecord())) {
+                        treatmentList.add(physiotherapyTreatment);
+                    } else {
+                        System.out.println("The patient can't do this type of exercise");
+                    }
+
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            } else if (verify.equals("q")) {
+                System.out.println("Exit treatments");
+            } else {
+                System.out.println("The treatment type is invalid");
+                return;
+            }
+
+        }
+
+        Diagnostic diagnostic = new Diagnostic(name, treatmentList);
+        appointment.setDiagnostic(diagnostic);
+        System.out.println("Diagnostic added to appointment");
+    }
+
+    public List<Appointment> sortAppointments() {
+        appointments.sort(Comparator.comparing(Appointment::getAppointmentDate));
+        return appointments;
+    }
+
+    public void allPatientAppointments(String firstName, String lastName) {
+        sortAppointments();
+
+        StringBuilder sb = new StringBuilder();
+        for (Patient patient : patients) {
+            if (patient.getFirstName().equals(firstName) && patient.getLastName().equals(lastName)) {
+                for (Appointment appointment : appointments) {
+                    if (appointment.getPatient().equals(patient)) {
+                        sb.append("\nAppointment date: " + appointment.getAppointmentDate()
+                                + " doctor: " + appointment.getDoctor().getFirstName() + " " + appointment.getDoctor().getLastName()
+                                + (appointment.getDiagnostic() != null && appointment.getDiagnostic().getName() != null
+                                ? " diagnostic: " + appointment.getDiagnostic().getName()
+                                : "\n"));
+                        if (appointment.getDiagnostic() != null) {
+                            for (Treatment treatment : appointment.getDiagnostic().getTreatments()) {
+                                sb.append("Treatment type: " + treatment.treatmentType() + "\n Treatment description: \n " + treatment.treatmentDescription());
+                            }
+                        } else {
+                            sb.append("No diagnostic added for this appointment.\n");
+                        }
+
+                    }
+                }
+            }
+        }
+        if (!sb.isEmpty()) {
+            System.out.println(sb);
+        } else {
+            System.out.println("No appointments found for this patient");
+        }
+    }
+
+
     public Doctor findDoctor(String doctorName) {
         for (Doctor d : doctors) {
-            if((d.getFirstName() + " "+ d.getLastName()).equals(doctorName)) {
+            if ((d.getFirstName() + " " + d.getLastName()).equals(doctorName)) {
                 return d;
             }
         }
@@ -116,7 +215,7 @@ public class Service {
 
     public Patient findPatient(String patientName) {
         for (Patient p : patients) {
-            if((p.getFirstName() + " " + p.getLastName()).equals(patientName)) {
+            if ((p.getFirstName() + " " + p.getLastName()).equals(patientName)) {
                 return p;
             }
         }
@@ -133,86 +232,6 @@ public class Service {
         return null;
     }
 
-    public Appointment findAppointment(int appointmentId) {
-        for (Appointment ap : appointments) {
-            if (ap.getAppointmentId() == appointmentId) {
-                return ap;
-            }
-        }
-        return null;
-    }
-
-    public Appointment findAppointment2(int appointmentId){
-
-        return appointments.stream().filter(appointment -> appointment.getAppointmentId().equals(appointmentId)).findFirst().orElse(Null);
-
-    }
-
-    public void addAppointment(Appointment appointment) {
-        for (Appointment app : appointments) {
-            if (app.equals(appointment)) {
-                System.out.println("Appointment already exists");
-                return;
-            }
-        }
-
-        if(!doctors.contains(appointment.getDoctor())) {
-            System.out.println("Doctor doesn't exist");
-            return;
-        }
-
-        if(!patients.contains(appointment.getPatient())) {
-            System.out.println("Patient doesn't exist");
-            return;
-        }
-
-        int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
-        TimeInterval[] doctorSchedule = appointment.getDoctor().getSchedule().getSchedule()[appointmentDay];
-
-        if (doctorSchedule.length == 0) {
-            System.out.println("The doctor does not work on this day, appointment failed");
-            return;
-        }
-
-        boolean goodInterval = false;
-        LocalTime appointmentStart = appointment.getAppointmentInterval().start();
-        LocalTime appointmentEnd = appointment.getAppointmentInterval().end();
-
-        for (TimeInterval workInterval : doctorSchedule) {
-            LocalTime workStart = workInterval.start();
-            LocalTime workEnd = workInterval.end();
-
-            if (!appointmentStart.isBefore(workStart) && !appointmentEnd.isAfter(workEnd)) {
-                goodInterval = true;
-                break;
-            }
-        }
-
-        if (!goodInterval) {
-            System.out.println("The appointment interval is not within the doctor's working hours, appointment failed");
-            return;
-        }
-
-        for (Appointment app : appointments) {
-            if (app.getDoctor().equals(appointment.getDoctor()) &&
-                    app.getAppointmentDate().equals(appointment.getAppointmentDate()) &&
-                    app.getAppointmentInterval().start().isBefore(appointment.getAppointmentInterval().end()) &&
-                    appointment.getAppointmentInterval().start().isBefore(app.getAppointmentInterval().end())) {
-                System.out.println("Appointment interval overlaps with another appointment");
-                return;
-            }
-        }
-
-        appointments.add(appointment);
-       //patients.add(appointment.getPatient());
-
-        System.out.println("Appointment successfully added!");
-    }
-
-    public List<Appointment> sortAppointments() {
-        appointments.sort(Comparator.comparing(Appointment::getAppointmentDate));
-        return appointments;
-    }
 
     public void viewAppointments(Doctor doctor) {
         sortAppointments();
@@ -221,9 +240,9 @@ public class Service {
         for (Appointment app : appointments) {
             if (app.getDoctor().equals(doctor)) {
                 sb.append("\nPatient name: " + app.getPatient().getLastName() + " " + app.getPatient().getFirstName() + "\n"
-                + "Date: " + app.getAppointmentDate().toString() + "\n"
-                + "Time interval: " + app.getAppointmentInterval().printInterval() + "\n"
-                + "Medical service: " + app.getMedicalService().getServiceName() + "\n");
+                        + "Date: " + app.getAppointmentDate().toString() + "\n"
+                        + "Time interval: " + app.getAppointmentInterval().printInterval() + "\n"
+                        + "Medical service: " + app.getMedicalService().getServiceName() + "\n");
             }
         }
         if (sb.length() > 0) {
@@ -233,63 +252,6 @@ public class Service {
         }
     }
 
-    public void addDiagnostic(Appointment appointment) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Add a diagnostic to appointment");
-        System.out.println("Please enter the name of the diagnostic to be added: ");
-        String name = scanner.nextLine();
-        System.out.println("How many treatments would you like to add this diagnostic?");
-        int treatments = Integer.parseInt(scanner.nextLine());
-
-        Treatment[] treatmentArray = new Treatment[treatments];
-        for (int i = 0; i < treatments; i++) {
-            System.out.println("Please enter the type of the treatment to be added: ");
-            String type = scanner.nextLine();
-            System.out.println("Please enter the treatment interval: ");
-            int interval = Integer.parseInt(scanner.nextLine());
-            System.out.println("Please enter the doctor notes: ");
-            String doctorNotes = scanner.nextLine();
-
-            if (type.equals("Med")) {
-                System.out.println("Please enter the name of the treatment to be added: ");
-                String medicationName = scanner.nextLine();
-
-                boolean okMedicine = true;
-                for (int j = 0; j < appointment.getPatient().getMedicalRecord().getAllergies().length; j++) {
-                    if (medicationName.equals(appointment.getPatient().getMedicalRecord().getAllergies()[j])) {
-                        System.out.println("The patient has an allergy to this medicine");
-                        okMedicine = false;
-                        i--;
-                    }
-                }
-                if (okMedicine) {
-                    System.out.println("Please enter the dosage of the treatment to be added: ");
-                    double dosage = Double.parseDouble(scanner.nextLine());
-                    Treatment treatment = new MedicationTreatment(interval, doctorNotes, medicationName, dosage);
-                    treatmentArray[i] = treatment;
-                }
-            } else if (type.equals("Phy")) {
-                System.out.println("Please enter the name of the exercise to be added: ");
-                String exerciseName = scanner.nextLine();
-                System.out.println("Please enter the exercise number of repetitions to be added: ");
-                int repetitions = Integer.parseInt(scanner.nextLine());
-                Treatment treatment = new PhysiotherapyTreatment(interval, doctorNotes, repetitions, exerciseName);
-                treatmentArray[i] = treatment;
-            } else {
-                System.out.println("The treatment type is invalid");
-                return;
-            }
-
-        }
-
-        System.out.println("Please enter the possible cause of the disease");
-        String possibleCause = scanner.nextLine();
-
-        Diagnostic diagnostic = new Diagnostic(name, treatmentArray, possibleCause);
-
-        appointment.setDiagnostic(diagnostic);
-        System.out.println("Diagnostic added to appointment");
-    }
 
     public void addDoctor(Doctor doctor) {
 
@@ -308,8 +270,7 @@ public class Service {
 
         if (!sb.isEmpty()) {
             System.out.println(sb);
-        }
-        else{
+        } else {
             System.out.println("No Doctors found for this specialty");
         }
 
@@ -323,7 +284,7 @@ public class Service {
             }
         }
 
-        if(spec == null) {
+        if (spec == null) {
             System.out.println("The specialty " + specialty + " doesn't exist");
             return;
         }
@@ -350,37 +311,6 @@ public class Service {
         patients.add(patient);
     }
 
-    public void allPatientAppointments(String firstName, String lastName) {
-        StringBuilder sb = new StringBuilder();
-        for (Patient patient : patients) {
-            if (patient.getFirstName().equals(firstName) && patient.getLastName().equals(lastName)) {
-                for (Appointment appointment : appointments) {
-                    if (appointment.getPatient().equals(patient)) {
-                        sb.append("\nAppointment date: " + appointment.getAppointmentDate()
-                                + " doctor: " + appointment.getDoctor().getFirstName() + " " + appointment.getDoctor().getLastName()
-                                + (appointment.getDiagnostic() != null && appointment.getDiagnostic().getName() != null
-                                ? " diagnostic: " + appointment.getDiagnostic().getName()
-                                : "") + " ");
-                        if (appointment.getDiagnostic() != null) {
-                            for (Treatment treatment : appointment.getDiagnostic().getTreatments()) {
-                                sb.append("Treatment type: " + treatment.treatmentType() + " treatment explained: " + treatment.treatmentDescription() + " ");
-                            }
-                        } else {
-                            sb.append("No diagnostic added for this appointment.\n");
-                        }
-
-                    }
-                }
-            }
-        }
-        if(!sb.isEmpty()) {
-            System.out.println(sb);
-        }
-        else{
-            System.out.println("No appointments found for this patient");
-        }
-
-    }
 
     public void appointmentReschedule(String patientName, String doctorName, LocalDate appointmentDate, LocalDate rescheduleDate, LocalTime rescheduleTime) {
 
@@ -397,7 +327,7 @@ public class Service {
             return;
         }
 
-        for(Appointment app: appointments) {
+        for (Appointment app : appointments) {
             if ((app.getDoctor().getFirstName() + " " + app.getDoctor().getLastName()).equals(doctorName)
                     && app.getAppointmentDate().equals(appointmentDate) &&
                     (app.getPatient().getFirstName() + " " + app.getPatient().getLastName()).equals(patientName)) {
@@ -545,11 +475,11 @@ public class Service {
         }
     }
 
-    public void patientMoney(){
+    public void patientMoney() {
         double totalMoney = 0;
         double serviceMoney = 0;
-        for(Appointment appointment : appointments){
-            if(LocalDate.now().getYear() == appointment.getAppointmentDate().getYear()){
+        for (Appointment appointment : appointments) {
+            if (LocalDate.now().getYear() == appointment.getAppointmentDate().getYear()) {
                 serviceMoney = appointment.getMedicalService().getServicePrice();
                 totalMoney += appointment.getPatient().calculateBill(serviceMoney);
             }
@@ -557,8 +487,6 @@ public class Service {
         System.out.println("Total money from patients this year is: " + totalMoney);
     }
 
-
-     */
 
 }
 

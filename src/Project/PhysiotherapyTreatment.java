@@ -8,7 +8,7 @@ public class PhysiotherapyTreatment implements Treatment {
     private int repetitions;
     private String medicalIssues;
 
-    public PhysiotherapyTreatment(int repetitions, String exerciseName, String medicalIssues) {
+    public PhysiotherapyTreatment(String exerciseName, int repetitions, String medicalIssues) {
         this.exerciseName = exerciseName;
         this.repetitions = repetitions;
         this.medicalIssues = medicalIssues;
@@ -20,20 +20,25 @@ public class PhysiotherapyTreatment implements Treatment {
     }
 
     @Override
-    public void treatmentDescription() {
-        System.out.println("Physiotherapy treatment description");
-        System.out.println("Exercise name: " + this.exerciseName + " repetitions: " + this.repetitions + " medical issue: " + this.medicalIssues);
+    public String treatmentDescription() {
+
+        return ("Exercise name: " + this.exerciseName + " repetitions: " + this.repetitions + " medical issue: " + this.medicalIssues);
     }
 
     @Override
-    public void verifyTreatment(MedicalRecord medicalRecord) {
+    public Boolean verifyTreatment(MedicalRecord medicalRecord) {
 
         List<String> physicalRestrictions = medicalRecord.getPhysicalRestrictions();
         boolean restrictionFound = physicalRestrictions.stream().anyMatch(restriction -> restriction.contains(medicalIssues));
 
         if (restrictionFound) {
-            System.out.println("Physical restriction found, this treatment may not be appropriate");
+            return false;
         }
+        return true;
+    }
+
+    public String getExerciseName() {
+        return exerciseName;
     }
 
 

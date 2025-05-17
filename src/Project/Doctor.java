@@ -48,7 +48,6 @@ public class Doctor extends Person implements Scheduler {
             return;
         }
 
-
         schedule.addToSchedule(day,  LocalTime.of(sHour, sMinute), LocalTime.of(eHour, eMinute));
         } catch (DateTimeException e) {
             System.out.println("Invalid time format.");}

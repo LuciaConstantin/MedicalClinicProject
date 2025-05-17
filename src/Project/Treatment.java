@@ -2,6 +2,6 @@ package Project;
 
 public interface Treatment {
     String treatmentType();
-    void treatmentDescription();
-    void verifyTreatment(MedicalRecord record);
+    String treatmentDescription();
+    Boolean verifyTreatment(MedicalRecord record);
 }

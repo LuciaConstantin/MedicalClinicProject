@@ -1,14 +1,16 @@
 package Project;
 
+import java.util.List;
+
 public class Diagnostic {
     private String name;
-    private Treatment[] treatments;
-    private String possibleCause;
+    private List<Treatment> treatments;
 
-    public Diagnostic(String name, Treatment[] treatments, String possibleCause) {
+
+    public Diagnostic(String name, List<Treatment> treatments) {
         this.name = name;
         this.treatments = treatments;
-        this.possibleCause = possibleCause;
+
     }
 
     public String getName() {
@@ -16,15 +18,14 @@ public class Diagnostic {
         return name;
     }
 
-    public Treatment[] getTreatments() {
-
+    public List<Treatment> getTreatments() {
         return treatments;
     }
 
-    public String getPossibleCause() {
-
-        return possibleCause;
+    public void setTreatments(List<Treatment> treatments) {
+        this.treatments = treatments;
     }
+
 
 
 }

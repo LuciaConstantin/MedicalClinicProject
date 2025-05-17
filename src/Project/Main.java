@@ -1,9 +1,11 @@
 package Project;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -36,8 +38,10 @@ public class Main {
         List<String> allergies2 = Arrays.asList(allergies1);
         String[] chronicConditions1 = {"Thyroid disease", "Migraines"};
         List<String> chronicConditions = Arrays.asList(chronicConditions1);
+        String[] physicalRestri = {"knee", "back issues"};
+        List<String> physicalRestrictions = Arrays.asList(physicalRestri);
 
-        MedicalRecord patientRecord1 = new MedicalRecord(allergies2, chronicConditions, null);
+        MedicalRecord patientRecord1 = new MedicalRecord(allergies2, chronicConditions, physicalRestrictions);
         Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
                 "0734567898", LocalDate.parse("1965-11-09"), patientRecord1, HealthInsurance.PUBLIC);
         Patient patient2 = new MemberPatient("Andrei", "Popescu", "508345678986", "andpo@gmail.com",
@@ -46,6 +50,7 @@ public class Main {
 
         Appointment appointment = new Appointment(doctor1, patient1, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0), medicalServices1);
         Appointment appointment2 = new Appointment(doctor1, patient1, LocalDate.parse("2024-04-08"), LocalTime.of(9, 25), medicalServices2);
+        Appointment appointment3 = new Appointment(doctor1, patient1, LocalDate.parse("2024-04-08"), LocalTime.of(21, 30), medicalServices2);
 
         Service service = Service.getInstance();
 
@@ -55,16 +60,22 @@ public class Main {
         service.addPatient(patient2);
         service.addAppointment(appointment);
         service.addAppointment(appointment2);
+        service.addAppointment(appointment3);
 
+        /*
         Appointment app = service.findAppointment(1);
         if(app != null) {
             System.out.println("Appointment was found!");
-        }
+        }*/
 
-        doctor1.addSchedule();
-        doctor1.viewSchedule();
-        System.out.println(doctor1.toString());
-/*
+        //doctor1.addSchedule();
+        //doctor1.viewSchedule();
+        //System.out.println(doctor1.toString());
+        service.allPatientAppointments("Mirela", "Soare");
+        service.addDiagnostic(appointment);
+        service.allPatientAppointments("Mirela", "Soare");
+
+
 
 
         Scanner s = new Scanner(System.in);
@@ -242,7 +253,7 @@ public class Main {
             }
         }
 
-        s.close();*/
+        s.close();
     }
 
 

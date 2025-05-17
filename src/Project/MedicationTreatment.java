@@ -20,19 +20,19 @@ public class MedicationTreatment implements Treatment {
     }
 
     @Override
-    public void treatmentDescription() {
-        System.out.println("Medication treatment description");
-        System.out.println("Medication name: " + medicationName + " dosage: " + dosage + " treatmentInterval: " + treatmentInterval);
+    public String treatmentDescription() {
+        return ("Medication name: " + medicationName + " dosage: " + dosage + " treatmentInterval: " + treatmentInterval);
     }
 
     @Override
-    public void verifyTreatment(MedicalRecord medicalRecord) {
+    public Boolean verifyTreatment(MedicalRecord medicalRecord) {
         List<String> allergies = medicalRecord.getAllergies();
         boolean allergyFound = allergies.stream().anyMatch(allergy -> allergy.equals(medicationName));
 
         if (allergyFound) {
-            System.out.println("Allergy found, the medicine can't be used");
+            return false;
         }
+        return true;
 
     }
 
