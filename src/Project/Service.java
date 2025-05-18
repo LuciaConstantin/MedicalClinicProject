@@ -32,27 +32,23 @@ public class Service {
         try {
             for (Appointment app : appointments) {
                 if (app.equals(appointment)) {
-                    System.out.println("Appointment already exists");
-                    return;
+                    throw new AppointmentException("Appointment already exists");
                 }
             }
 
             if (!doctors.contains(appointment.getDoctor())) {
-                System.out.println("Doctor doesn't exist");
-                return;
+                throw new AppointmentException("Doctor doesn't exist");
             }
 
             if (!patients.contains(appointment.getPatient())) {
-                System.out.println("Patient doesn't exist");
-                return;
+                throw new AppointmentException("Patient doesn't exist");
             }
 
             int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
             TimeInterval[] doctorSchedule = appointment.getDoctor().getSchedule().getSchedule()[appointmentDay];
 
             if (doctorSchedule.length == 0) {
-                System.out.println("The doctor does not work on this day, appointment failed");
-                return;
+                throw new AppointmentException("The doctor does not work on this day, appointment failed");
             }
 
             boolean goodInterval = false;
@@ -63,15 +59,14 @@ public class Service {
                 LocalTime workStart = workInterval.start();
                 LocalTime workEnd = workInterval.end();
 
-                if (!appointmentStart.isBefore(workStart) && !appointmentEnd.isAfter(workEnd)) {
+                if (workInterval.contains(appointment.getAppointmentInterval())) {
                     goodInterval = true;
                     break;
                 }
             }
 
             if (!goodInterval) {
-                System.out.println("The appointment interval is not within the doctor's working hours, appointment failed");
-                return;
+                throw new AppointmentException("The appointment interval is not within the doctor's working hours, appointment failed");
             }
 
             for (Appointment app : appointments) {
@@ -79,14 +74,14 @@ public class Service {
                         app.getAppointmentDate().equals(appointment.getAppointmentDate()) &&
                         app.getAppointmentInterval().start().isBefore(appointment.getAppointmentInterval().end()) &&
                         appointment.getAppointmentInterval().start().isBefore(app.getAppointmentInterval().end())) {
-                    throw new AppointmentConflictException("Appointment interval overlaps with another appointment");
+                    throw new AppointmentException("Appointment interval overlaps with another appointment");
                 }
             }
 
             appointments.add(appointment);
             System.out.println("Appointment successfully added!");
 
-        } catch (AppointmentConflictException | BadInterval e) {
+        } catch (AppointmentException e) {
             System.out.println("Failed to add appointment: " + e.getMessage());
         }
 

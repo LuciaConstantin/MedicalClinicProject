@@ -72,7 +72,7 @@ public class Main {
         //doctor1.viewSchedule();
         //System.out.println(doctor1.toString());
         service.allPatientAppointments("Mirela", "Soare");
-        service.addDiagnostic(appointment);
+        //service.addDiagnostic(appointment);
         service.allPatientAppointments("Mirela", "Soare");
 
 
