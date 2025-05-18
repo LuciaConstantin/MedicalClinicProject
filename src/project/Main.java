@@ -1,20 +1,70 @@
-package Project;
+package project;
 
-import java.time.DateTimeException;
+import project.models.*;
+import project.service.ClinicService;
+
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
 
+    public static void main(String[] args) {
+        ClinicService serviceDataBase = new ClinicService();
+
+        String[] allergies1 = {"Pollen", "Almonds", "Penicillin"};
+        List<String> allergies2 = Arrays.asList(allergies1);
+        String[] chronicConditions1 = {"Thyroid disease", "Migraines"};
+        List<String> chronicConditions = Arrays.asList(chronicConditions1);
+        String[] physicalRestri = {"knee", "back issues"};
+        List<String> physicalRestrictions = Arrays.asList(physicalRestri);
+
+        MedicalRecord medicalRecord1 = new MedicalRecord(allergies2, chronicConditions, physicalRestrictions);
+
+        System.out.println(serviceDataBase.getMedicalRecordUsingId(4));
+
+        MedicalRecord medRec = serviceDataBase.getMedicalRecordUsingId(4);
+
+        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
+                "0734567898", LocalDate.parse("1965-11-09"), medRec, HealthInsurance.PUBLIC);
+        Patient patient2 = new MemberPatient("Andrei", "Popescu", "508345678986", "andpo@gmail.com",
+                "0734567898", LocalDate.parse("2000-11-09"), medRec, "10", Membership.GOLD);
+
+        Patient newPatient = serviceDataBase.getPatientByIdDB(7);
+        System.out.println(newPatient.getId());
+
+        MedicalServices medicalService1 = new MedicalServices("ultrasound", 100, 35);
+
+        MedicalServices medicalService2 = new MedicalServices("endocrinology consult", 400, 30);
+        //serviceDataBase.insertMedicalService(medicalService2);
+
+        MedicalServices med = serviceDataBase.getMedicalServiceByIdDB(3);
+        System.out.println(med);
+        System.out.println(med.getId());
+
+        Specialty specialty2 = new Specialty("Cardiology", 75000);
+        //serviceDataBase.insertSpecialtyDB(specialty2);
+
+        Specialty newSpecialty = serviceDataBase.getSpecialtyByIdDB(2);
+        System.out.println(newSpecialty);
+        System.out.println("aici "+newSpecialty.getId());
+
+        //serviceDataBase.insertSpecialtyMedicalServiceDB(newSpecialty.getId(), 1);
+        List<MedicalServices> m = serviceDataBase.getMedicalServicesForSpecialtyById(newSpecialty.getId());
+        newSpecialty.setMedicalServices(m.toArray(new MedicalServices[m.size()]));
+        System.out.println(newSpecialty);
+
+        Specialty newSpecialty2 = serviceDataBase.getSpecialtyByIdDB(1);
+
+
+
+
+        /*
         String[] endocrinologyConditions = {"thyroid problems", "infertility", "bone disorders"};
 
 
         MedicalServices medicalServices1 = new MedicalServices("ultrasound", 100, 35);
-        MedicalServices medicalServices2 = new MedicalServices("endocrinology consult", 400, 30);
+
 
         MedicalServices[] medicalServices = {medicalServices1, medicalServices2};
 
@@ -62,18 +112,7 @@ public class Main {
         service.addAppointment(appointment2);
         service.addAppointment(appointment3);
 
-        /*
-        Appointment app = service.findAppointment(1);
-        if(app != null) {
-            System.out.println("Appointment was found!");
-        }*/
 
-        //doctor1.addSchedule();
-        //doctor1.viewSchedule();
-        //System.out.println(doctor1.toString());
-        service.allPatientAppointments("Mirela", "Soare");
-        //service.addDiagnostic(appointment);
-        service.allPatientAppointments("Mirela", "Soare");
 
 
 
@@ -253,9 +292,8 @@ public class Main {
             }
         }
 
-        s.close();
-    }
-
+        s.close();*/
+   }
 
 }
 

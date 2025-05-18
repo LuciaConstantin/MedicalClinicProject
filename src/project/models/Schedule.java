@@ -1,9 +1,11 @@
-package Project;
+package project.models;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.Arrays;
 
 public class Schedule {
+    private int id;
     private TimeInterval[][] schedule;
 
     public Schedule() {
@@ -66,5 +68,25 @@ public class Schedule {
 
     public DayOfWeek getDay(int day) {
         return DayOfWeek.values()[day];
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setSchedule(TimeInterval[][] schedule) {
+        this.schedule = schedule;
+    }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "id=" + id +
+                ", schedule=" + Arrays.toString(schedule) +
+                '}';
     }
 }

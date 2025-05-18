@@ -1,4 +1,4 @@
-package Project;
+package project.models;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -74,8 +74,6 @@ public class Appointment {
     public void setAppointmentInterval(TimeInterval appointmentInterval) {
         this.appointmentInterval = appointmentInterval;
     }
-
-
 
 
 }

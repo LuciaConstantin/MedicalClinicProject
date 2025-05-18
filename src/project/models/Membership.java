@@ -1,4 +1,4 @@
-package Project;
+package project.models;
 
 public enum Membership {
     PLATINUM,

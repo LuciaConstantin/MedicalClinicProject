@@ -1,4 +1,4 @@
-package Project;
+package project.models;
 
 public interface Scheduler {
     public void addSchedule();
