@@ -57,14 +57,37 @@ CREATE TABLE specialty_medical_service(
 
 );
 
+CREATE TABLE doctor(
+    id BIGSERIAL PRIMARY KEY,
+    first_name varchar(40),
+    last_name varchar(40),
+    personal_ID varchar(30) UNIQUE,
+    email varchar(100),
+    phone varchar(11),
+    birth_date date,
+    hire_date date,
+    specialty_id BIGINT,
+    salary numeric(9, 2),
+    FOREIGN KEY(specialty_id) REFERENCES specialty(id) ON DELETE SET NULL
+);
+
 CREATE TABLE schedule(
     id BIGSERIAL PRIMARY KEY,
-    day_of_week INT,
-    start_hour INT,
-    start_minute INT,
-    end_hour INT,
-    end_minute INT
+    doctor_id bigint NOT NULL,
+    FOREIGN KEY(doctor_id) REFERENCES doctor(id) ON DELETE CASCADE
 );
+
+CREATE TABLE time_interval(
+    id BIGSERIAL PRIMARY KEY,
+    schedule_id bigint,
+    day int,
+    start_time time,
+    end_time time,
+    FOREIGN KEY(schedule_id) REFERENCES schedule(id) ON DELETE CASCADE
+
+);
+
+
 
 
 

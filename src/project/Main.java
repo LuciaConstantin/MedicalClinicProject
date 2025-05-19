@@ -4,12 +4,14 @@ import project.models.*;
 import project.service.ClinicService;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
+        Service service = Service.getInstance();
         ClinicService serviceDataBase = new ClinicService();
 
         String[] allergies1 = {"Pollen", "Almonds", "Penicillin"};
@@ -57,6 +59,28 @@ public class Main {
         Specialty newSpecialty2 = serviceDataBase.getSpecialtyByIdDB(1);
 
 
+        Schedule schedule1 = new Schedule();
+        schedule1.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
+        schedule1.addToSchedule("Monday", LocalTime.of(13, 0), LocalTime.of(16, 0));
+        schedule1.addToSchedule("Friday", LocalTime.of(17, 0), LocalTime.of(18, 0));
+
+        Schedule schedule2 = new Schedule();
+        schedule2.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(20, 0));
+
+
+
+
+        Doctor doctor1 = new Doctor("Ana", "Anghel", "608653345678", "ana@gmail.com", "078656789", LocalDate.parse("1976-01-07"),
+                LocalDate.parse("2010-11-07"),  newSpecialty2, schedule1);
+        Doctor doctor2 = new Doctor("Ava", "Ina", "608657845678", "avaaaa@gmail.com", "078600089", LocalDate.parse("1985-01-07"),
+                LocalDate.parse("2018-01-08"),  newSpecialty, schedule1);
+
+        //serviceDataBase.insertDoctorDb(doctor1);
+        //serviceDataBase.insertDoctorDb(doctor2);
+
+        Doctor doc = serviceDataBase.getDoctorByIdDb(1);
+        System.out.println(doc);
+        service.viewSchedule(doc);
 
 
         /*

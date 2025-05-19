@@ -16,7 +16,4 @@ public record TimeInterval(LocalTime start, LocalTime end) {
         return this.start.compareTo(other.start) <= 0 && this.end.compareTo(other.end) >= 0;
     }
 
-
-
-
 }

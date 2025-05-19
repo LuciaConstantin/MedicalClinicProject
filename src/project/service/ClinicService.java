@@ -1,14 +1,8 @@
 package project.service;
 
 import project.config.ConnectionProvider;
-import project.exceptions.MedicalRecordException;
-import project.exceptions.MedicalServiceException;
-import project.exceptions.MedicalServiceSpecialtyException;
-import project.exceptions.PatientException;
-import project.models.MedicalRecord;
-import project.models.MedicalServices;
-import project.models.Patient;
-import project.models.Specialty;
+import project.exceptions.*;
+import project.models.*;
 import project.repository.ClinicRepository;
 
 import java.sql.Connection;
@@ -85,6 +79,21 @@ public class ClinicService {
         Optional<List<MedicalServices> > client = clinicRepository.getMedicalServicesForSpecialty(ConnectionProvider.getConnection(), id);
         return client.orElseThrow(MedicalServiceSpecialtyException::new);
     }
+
+
+    public void insertDoctorDb(Doctor doctor) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.insertDoctor(connection, doctor);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Doctor getDoctorByIdDb(long id) {
+        Optional<Doctor> client = clinicRepository.getDoctorById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(DoctorException::new);
+    }
+
 
 
 }

@@ -3,6 +3,7 @@ package project.repository;
 import project.models.*;
 
 import java.sql.*;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,7 +124,7 @@ public class ClinicRepository {
                 ps.setString(10, pat.getGuardianId());
 
                 int insertedRows = ps.executeUpdate();
-                ;
+
                 System.out.println("Inserted " + insertedRows + " rows in child_patient");
 
             } catch (SQLException e) {
@@ -241,7 +242,6 @@ public class ClinicRepository {
 
         return Optional.empty();
     }
-
 
     public void insertMedicalService(Connection connection, MedicalServices medicalService) {
 
@@ -386,25 +386,161 @@ public class ClinicRepository {
         return services.isEmpty() ? Optional.empty() : Optional.of(services);
     }
 
-    /*
-    public void insertSchedule(Connection connection, Schedule schedule) {
+    public void insertDoctor(Connection connection, Doctor doctor) {
 
         String sql = """
-                    INSERT INTO schedule (day_of_week, start_hour, start_minute, end_hour, end_minute)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO doctor (first_name, last_name, personal_ID,
+                                               email, phone, birth_date, hire_date,specialty_id, salary )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
 
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, doctor.getFirstName());
+            ps.setString(2, doctor.getLastName());
+            ps.setString(3, doctor.getPersonalID());
+            ps.setString(4, doctor.getEmail());
+            ps.setString(5, doctor.getPhone());
+            LocalDate dob = doctor.getDateOfBirth();
+            ps.setDate(6, java.sql.Date.valueOf(dob));
+            LocalDate hd = doctor.getHireDate();
+            ps.setDate(7, java.sql.Date.valueOf(hd));
+            ps.setLong(8, doctor.getSpecialty().getId());
+            ps.setDouble(9, doctor.getSalary());
+
+            int insertedRows =  ps.executeUpdate();
+            System.out.println("Inserted " + insertedRows + " rows in doctor");
+
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                long generatedId = rs.getLong(1);
+                doctor.setId(generatedId);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String sql2 = """
+                    INSERT INTO schedule (doctor_id)
+                    VALUES (?)
+                    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, doctor.getId());
+
+            int insertedRows =  ps.executeUpdate();
+            System.out.println("Inserted " + insertedRows + " rows in schedule");
+
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                long scheduleId = rs.getLong(1);
+                doctor.getSchedule().setId(scheduleId);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        String sql3 = """
+                    INSERT INTO time_interval (schedule_id, day, start_time, end_time)
+                    VALUES (?, ?, ?, ?)
+                    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql3)) {
+            TimeInterval[][] timeInterval = doctor.getSchedule().getSchedule();
+            for(int day=0; day<timeInterval.length; day++) {
+                TimeInterval[] intervals = timeInterval[day];
+                for(int interval=0; interval<intervals.length; interval++) {
+                    TimeInterval specificInterval = intervals[interval];
+                    if(specificInterval != null) {
+                        ps.setLong(1, doctor.getSchedule().getId());
+                        ps.setInt(2, day);
+                        ps.setTime(3, Time.valueOf(specificInterval.start()));
+                        ps.setTime(4, Time.valueOf(specificInterval.end()));
+                        ps.addBatch();
+                    }
+                }
+
+            }
+
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public Optional<Doctor> getDoctorById(Connection connection, long id) {
+        String sql = """
+        SELECT 
+            d.id as doctor_id,
+            d.first_name, d.last_name, d.personal_ID, d.email, d.phone,
+            d.birth_date, d.hire_date, d.salary,
+            s.id as schedule_id,
+            t.day, t.start_time, t.end_time,
+            sp.id as specialty_id, sp.specialty_name, sp.starting_salary
+        FROM doctor d
+        LEFT JOIN schedule s ON d.id = s.doctor_id
+        LEFT JOIN time_interval t ON s.id = t.schedule_id
+        LEFT JOIN specialty sp ON d.specialty_id = sp.id
+        WHERE d.id = ?
+        ORDER BY t.day, t.start_time
+        """;
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setTime(1, schedule.getSchedule().start());
-            ps.setDouble(2, specialty.getStartingSalary());
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                Doctor doctor = null;
+                Schedule schedule = new Schedule();
+                boolean found = false;
 
-            int insertedRows =  ps.executeUpdate();;
-            System.out.println("Inserted " + insertedRows + " rows in specialty");
+                while (rs.next()) {
+                    if (!found) {
+                        Specialty specialty = new Specialty(
+                                rs.getLong("specialty_id"),
+                                rs.getString("specialty_name"),
+                                rs.getDouble("starting_salary")
+                        );
 
+                        doctor = new Doctor(
+                                rs.getString("first_name"),
+                                rs.getString("last_name"),
+                                rs.getString("personal_ID"),
+                                rs.getString("email"),
+                                rs.getString("phone"),
+                                rs.getDate("birth_date").toLocalDate(),
+                                rs.getDate("hire_date").toLocalDate(),
+                                specialty,
+                                schedule
+                        );
+                        doctor.setId(rs.getLong("doctor_id"));
+                        doctor.setSalary(rs.getDouble("salary"));
+                        schedule.setId(rs.getLong("schedule_id"));
+                        found = true;
+                    }
+
+                    int dayIndex = rs.getInt("day");
+                    Time start = rs.getTime("start_time");
+                    Time end = rs.getTime("end_time");
+
+                    if (start != null && end != null) {
+                        String day = DayOfWeek.of(dayIndex + 1).name();
+                        schedule.addToSchedule(day, start.toLocalTime(), end.toLocalTime());
+                    }
+
+                }
+
+                return found ? Optional.of(doctor) : Optional.empty();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-     */
+
+
 }
