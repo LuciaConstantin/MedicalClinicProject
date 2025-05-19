@@ -87,6 +87,53 @@ CREATE TABLE time_interval(
 
 );
 
+CREATE TABLE medication_treatment(
+    id BIGSERIAL PRIMARY KEY,
+    medication_name varchar(50),
+    dosage numeric(9, 3),
+    treatment_interval int
+);
+
+CREATE TABLE physiotherapy_treatment(
+    id BIGSERIAL PRIMARY KEY,
+    exercise_name varchar(50),
+    repetitions int,
+    medical_issues varchar(200)
+);
+
+CREATE TABLE diagnostic(
+    id BIGSERIAL PRIMARY KEY,
+    diagnostic_name varchar(100)
+);
+
+CREATE TABLE diagnostic_treatment(
+    diagnostic_id BIGINT,
+    treatment_id BIGINT,
+    treatment_type varchar(50),
+    FOREIGN KEY (diagnostic_id) REFERENCES diagnostic(id) ON DELETE SET NULL,
+    PRIMARY KEY (diagnostic_id, treatment_id, treatment_type)
+);
+
+CREATE TABLE appointment_time_interval(
+    id BIGSERIAL PRIMARY KEY,
+    start_appointment time,
+    end_appointment time
+);
+
+CREATE TABLE appointment(
+    id BIGSERIAL PRIMARY KEY,
+    doctor_id BIGINT,
+    patient_id BIGINT,
+    appointment_date DATE,
+    appointment_interval_id BIGINT,
+    medical_service_id BIGINT,
+    diagnostic_id BIGINT,
+    FOREIGN KEY (doctor_id) REFERENCES doctor(id) ON DELETE SET NULL,
+    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE SET NULL,
+    FOREIGN KEY (appointment_interval_id) REFERENCES appointment_time_interval(id) ON DELETE SET NULL,
+    FOREIGN KEY (medical_service_id) REFERENCES medical_service(id) ON DELETE SET NULL,
+    FOREIGN KEY (diagnostic_id) REFERENCES diagnostic(id) ON DELETE SET NULL
+);
 
 
 

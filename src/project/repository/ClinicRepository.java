@@ -541,6 +541,219 @@ public class ClinicRepository {
         }
     }
 
+    public void insertMedicationTreatment(Connection connection, MedicationTreatment medicationTreatment) {
 
+        String sql = """
+                    INSERT INTO medication_treatment (medication_name, dosage, treatment_interval)
+                    VALUES (?, ?, ?)
+                    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, medicationTreatment.getMedicationName());
+            ps.setDouble(2, medicationTreatment.getDosage());
+            ps.setInt(3, medicationTreatment.getTreatmentInterval());
+
+            int insertedRows =  ps.executeUpdate();;
+            System.out.println("Inserted " + insertedRows + " rows in medication_treatment");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Optional<MedicationTreatment> getMedicationTreatmentById(Connection connection, long id) {
+        String sql = """
+                SELECT * 
+                FROM medication_treatment 
+                WHERE id = ?
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql))
+        {
+            ps.setLong(1, id);
+            try (ResultSet result = ps.executeQuery())
+            {
+                if (result.next()) {
+                    return Optional.of(new MedicationTreatment(
+                            result.getLong("id"),
+                            result.getString("medication_name"),
+                            result.getDouble("dosage"),
+                            result.getInt("treatment_interval")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
+    }
+
+    public void insertPhysiotherapyTreatment(Connection connection, PhysiotherapyTreatment phy) {
+
+        String sql = """
+                    INSERT INTO physiotherapy_treatment (exercise_name, repetitions, medical_issues)
+                    VALUES (?, ?, ?)
+                    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, phy.getExerciseName());
+            ps.setInt(2, phy.getRepetitions());
+            ps.setString(3, phy.getMedicalIssues());
+
+            int insertedRows =  ps.executeUpdate();;
+            System.out.println("Inserted " + insertedRows + " rows in physiotherapy_treatment");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Optional<PhysiotherapyTreatment> getPhysiotherapyTreatmentById(Connection connection, long id) {
+        String sql = """
+                SELECT * 
+                FROM physiotherapy_treatment 
+                WHERE id = ?
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql))
+        {
+            ps.setLong(1, id);
+            try (ResultSet result = ps.executeQuery())
+            {
+                if (result.next()) {
+                    return Optional.of(new PhysiotherapyTreatment(
+                            result.getLong("id"),
+                            result.getString("exercise_name"),
+                            result.getInt("repetitions"),
+                            result.getString("medical_issues")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return Optional.empty();
+    }
+
+    public void insertDiagnostic(Connection connection, Diagnostic diagnostic) {
+
+        String sql = """
+                    INSERT INTO diagnostic (diagnostic_name)
+                    VALUES (?)
+                    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, diagnostic.getName());
+
+
+            int insertedRows =  ps.executeUpdate();;
+            System.out.println("Inserted " + insertedRows + " rows in diagnostic");
+
+            ResultSet result = ps.getGeneratedKeys();
+            if (result.next()) {
+                long diagnosticId = result.getLong(1);
+                diagnostic.setId(diagnosticId);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String sql2 = """
+                    INSERT INTO diagnostic_treatment (diagnostic_id, treatment_id, treatment_type)
+                    VALUES (?, ?, ?)
+                    """;
+
+        List<Treatment> treatment = diagnostic.getTreatments();
+        for(Treatment t : treatment) {
+
+            try (PreparedStatement ps = connection.prepareStatement(sql2)) {
+                ps.setLong(1, diagnostic.getId());
+                if(t.treatmentType().equals("Medication treatment")){
+                    MedicationTreatment med = (MedicationTreatment) t;
+                    ps.setLong(2, med.getId());
+                }
+                else {
+                    PhysiotherapyTreatment phy = (PhysiotherapyTreatment) t;
+                    ps.setLong(2, phy.getId());
+                }
+                ps.setString(3, t.treatmentType());
+                int insertedRows =  ps.executeUpdate();;
+                System.out.println("Inserted " + insertedRows + " rows in diagnostic_treatment");
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+    }
+
+    public Optional<Diagnostic> getDiagnosticById(Connection connection, long id) {
+        String sqlDiagnostic = "SELECT * FROM diagnostic WHERE id = ?";
+        String sqlTreatments = "SELECT treatment_id, treatment_type FROM diagnostic_treatment WHERE diagnostic_id = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sqlDiagnostic)) {
+            ps.setLong(1, id);
+
+            try (ResultSet result = ps.executeQuery()) {
+                if (!result.next()) return Optional.empty();
+
+                String diagnosticName = result.getString("diagnostic_name");
+                List<Treatment> treatments = new ArrayList<>();
+
+                try (PreparedStatement ps2 = connection.prepareStatement(sqlTreatments)) {
+                    ps2.setLong(1, id);
+
+                    try (ResultSet result2 = ps2.executeQuery()) {
+                        while (result2.next()) {
+                            long treatmentId = result2.getLong("treatment_id");
+                            String type = result2.getString("treatment_type");
+
+                            switch (type) {
+                                case "Medication treatment" -> {
+                                    Optional <MedicationTreatment> optMed = getMedicationTreatmentById(connection, treatmentId);
+                                    optMed.ifPresent(treatments::add);
+                                }
+                                case "Physiotherapy treatment" -> {
+                                    Optional <PhysiotherapyTreatment> optPhy = getPhysiotherapyTreatmentById(connection, treatmentId);
+                                    optPhy.ifPresent(treatments::add);
+                                }
+                            }
+                        }
+                    }
+                }
+                return Optional.of(new Diagnostic(id, diagnosticName, treatments));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void insertAppointment(Connection connection, Appointment appointment) {
+
+            String sql = """
+                    INSERT INTO child_patient (doctor_id, patient_id, appointment_date, 
+                                               appointment_interval_id, medical_service_id, diagnostic_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """;
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setLong(1, appointment.getDoctor().getId());
+                ps.setLong(2, appointment.getPatient().getId());
+                LocalDate dA = appointment.getAppointmentDate();
+                ps.setDate(3, java.sql.Date.valueOf(dA));
+                ps.setLong(4, appointment.getAppointmentInterval().getId());
+
+                int insertedRows = ps.executeUpdate();
+
+                System.out.println("Inserted " + insertedRows + " rows in child_patient");
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+
+
+    }
 
 }

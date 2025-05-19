@@ -94,6 +94,43 @@ public class ClinicService {
         return client.orElseThrow(DoctorException::new);
     }
 
+    public void insertMedicationTreatmentDb(MedicationTreatment med) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.insertMedicationTreatment(connection, med);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public MedicationTreatment getMedicationTreatmentDb(long id) {
+        Optional<MedicationTreatment> client = clinicRepository.getMedicationTreatmentById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(MedicationTreatmentException::new);
+    }
+
+    public void insertPhysiotherapyTreatmentDb(PhysiotherapyTreatment phy) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.insertPhysiotherapyTreatment(connection, phy);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public PhysiotherapyTreatment getPhysiotherapyTreatmentDb(long id) {
+        Optional<PhysiotherapyTreatment> client = clinicRepository.getPhysiotherapyTreatmentById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(PhysiothraphyTreatment::new);
+    }
+
+    public void insertDiagnosticDb(Diagnostic diagnostic) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.insertDiagnostic(connection, diagnostic);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Diagnostic getDiagnosticDb(long id) {
+        Optional<Diagnostic> client = clinicRepository.getDiagnosticById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(PhysiothraphyTreatment::new);
+    }
 
 }

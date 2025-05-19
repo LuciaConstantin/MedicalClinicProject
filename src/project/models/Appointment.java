@@ -4,8 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Appointment {
-    private static int nextId = 1;
-    private int appointmentId;
+    private long id;
     private Doctor doctor;
     private Patient patient;
     private LocalDate appointmentDate;
@@ -14,7 +13,17 @@ public class Appointment {
     private Diagnostic diagnostic;
 
     public Appointment(Doctor doctor, Patient patient, LocalDate appointmentDate, LocalTime appointmentStart,  MedicalServices medicalService) {
-        this.appointmentId = nextId++;
+        this.doctor = doctor;
+        this.patient = patient;
+        this.appointmentDate = appointmentDate;
+        LocalTime appointmentEnd = appointmentStart.plusMinutes(medicalService.getServiceTime());
+        this.appointmentInterval = new TimeInterval(appointmentStart, appointmentEnd);
+        this.medicalService = medicalService;
+        this.diagnostic = null;
+    }
+
+    public Appointment(long id, Doctor doctor, Patient patient, LocalDate appointmentDate, LocalTime appointmentStart,  MedicalServices medicalService) {
+        this.id= id;
         this.doctor = doctor;
         this.patient = patient;
         this.appointmentDate = appointmentDate;
@@ -25,10 +34,7 @@ public class Appointment {
     }
 
 
-    public int getAppointmentId() {
 
-        return appointmentId;
-    }
 
     public Doctor getDoctor() {
 
@@ -75,5 +81,36 @@ public class Appointment {
         this.appointmentInterval = appointmentInterval;
     }
 
+    public long getId() {
+        return id;
+    }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public void setMedicalService(MedicalServices medicalService) {
+        this.medicalService = medicalService;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", doctor=" + doctor +
+                ", patient=" + patient +
+                ", appointmentDate=" + appointmentDate +
+                ", appointmentInterval=" + appointmentInterval +
+                ", medicalService=" + medicalService +
+                ", diagnostic=" + diagnostic +
+                '}';
+    }
 }

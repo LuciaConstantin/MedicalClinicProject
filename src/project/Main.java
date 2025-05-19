@@ -5,6 +5,7 @@ import project.service.ClinicService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,6 +83,29 @@ public class Main {
         System.out.println(doc);
         service.viewSchedule(doc);
 
+
+        PhysiotherapyTreatment phy1 = new PhysiotherapyTreatment("extension lunge", 10, "back pain");
+        MedicationTreatment medTreat1= new MedicationTreatment("exuthyrox", 20, 60);
+        //serviceDataBase.insertPhysiotherapyTreatmentDb(phy1);
+        //serviceDataBase.insertMedicationTreatmentDb(medTreat1);
+
+        PhysiotherapyTreatment phy = serviceDataBase.getPhysiotherapyTreatmentDb(1);
+        MedicationTreatment medTreat= serviceDataBase.getMedicationTreatmentDb(1);
+        System.out.println(phy);
+        System.out.println(medTreat);
+        System.out.println(medTreat.getId());
+        System.out.println(phy.getId());
+
+        List<Treatment> treatment1 = new ArrayList<Treatment>();
+        treatment1.add(medTreat);
+        treatment1.add(phy);
+
+        Diagnostic diagnostic = new Diagnostic("osteoporosis", treatment1);
+        //serviceDataBase.insertDiagnosticDb(diagnostic);
+
+        Diagnostic diagDb = serviceDataBase.getDiagnosticDb(1);
+        System.out.println(diagDb);
+        System.out.println(diagDb.getId());
 
         /*
         String[] endocrinologyConditions = {"thyroid problems", "infertility", "bone disorders"};
