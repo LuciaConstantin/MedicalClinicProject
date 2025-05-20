@@ -5,6 +5,7 @@ import project.models.*;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +60,6 @@ public class ClinicRepository {
         }
     }
 
-
     public Optional<MedicalRecord> getMedicalRecordById(Connection connection, long id) {
         String sql = """
                 SELECT * 
@@ -100,88 +100,85 @@ public class ClinicRepository {
         return Optional.empty();
     }
 
-
     public void insertPatient(Connection connection, Patient patient) {
-        if (patient.getPatientType().equals("child")) {
-            String sql = """
-                    INSERT INTO child_patient (first_name, last_name, personal_ID,
-                                               email, phone, birth_date, patient_type,
-                                               medical_record_id,guardian_name, guardian_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """;
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ChildPatient pat = (ChildPatient) patient;
-                ps.setString(1, pat.getFirstName());
-                ps.setString(2, pat.getLastName());
-                ps.setString(3, pat.getPersonalID());
-                ps.setString(4, pat.getEmail());
-                ps.setString(5, pat.getPhone());
-                LocalDate dob = pat.getDateOfBirth();
-                ps.setDate(6, java.sql.Date.valueOf(dob));
-                ps.setString(7, pat.getPatientType());
-                ps.setLong(8, pat.getMedicalRecord().getId());
-                ps.setString(9, pat.getGuardianName());
-                ps.setString(10, pat.getGuardianId());
+        String sql = """
+                    INSERT INTO patient (first_name, last_name, personal_ID,
+                                        email, phone, birth_date, patient_type, medical_record_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
 
-                int insertedRows = ps.executeUpdate();
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, patient.getFirstName());
+            ps.setString(2, patient.getLastName());
+            ps.setString(3, patient.getPersonalID());
+            ps.setString(4, patient.getEmail());
+            ps.setString(5, patient.getPhone());
+            LocalDate dob = patient.getDateOfBirth();
+            ps.setDate(6, java.sql.Date.valueOf(dob));
+            ps.setString(7, patient.getPatientType());
+            ps.setLong(8, patient.getMedicalRecord().getId());
 
-                System.out.println("Inserted " + insertedRows + " rows in child_patient");
+            int insertedRows = ps.executeUpdate();
 
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                long patientId = rs.getLong(1);
+                patient.setId(patientId);
             }
 
-        } else if (patient.getPatientType().equals("adult")) {
-            String sql = """
-                    INSERT INTO adult_patient (first_name, last_name, personal_ID,
-                                               email, phone, birth_date, patient_type,
-                                               medical_record_id, health_insurance)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::health_insurance_type)
+            System.out.println("Inserted " + insertedRows + " rows in patient");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (patient.getPatientType().equals("adult")) {
+            String sql1 = """
+                    INSERT INTO adult_patient (patient_id, health_insurance)
+                    VALUES (?, ?::health_insurance_type)
                     """;
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                AdultPatient adult = (AdultPatient) patient;
-                ps.setString(1, adult.getFirstName());
-                ps.setString(2, adult.getLastName());
-                ps.setString(3, adult.getPersonalID());
-                ps.setString(4, adult.getEmail());
-                ps.setString(5, adult.getPhone());
-                LocalDate dob = adult.getDateOfBirth();
-                ps.setDate(6, java.sql.Date.valueOf(dob));
-                ps.setString(7, adult.getPatientType());
-                ps.setLong(8, adult.getMedicalRecord().getId());
-                ps.setString(9, adult.getTypeOfHealthInsurance().name());
+            try (PreparedStatement ps = connection.prepareStatement(sql1)) {
+                AdultPatient aP = (AdultPatient) patient;
+                ps.setLong(1, aP.getId());
+                ps.setString(2, aP.getTypeOfHealthInsurance().name());
 
                 int insertedRows = ps.executeUpdate();
-                ;
                 System.out.println("Inserted " + insertedRows + " rows in adult_patient");
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
 
-        } else if (patient.getPatientType().equals("member")) {
-            String sql = """
-                    INSERT INTO member_patient (first_name, last_name, personal_ID,
-                                               email, phone, birth_date, patient_type,
-                                               medical_record_id, membership_number, membership)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?::membership_type)
+        } else if (patient.getPatientType().equals("child")) {
+            String sql2 = """
+                    INSERT INTO child_patient (patient_id, guardian_name, guardian_id)
+                    VALUES (?, ?, ?)
                     """;
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                MemberPatient member = (MemberPatient) patient;
-                ps.setString(1, member.getFirstName());
-                ps.setString(2, member.getLastName());
-                ps.setString(3, member.getPersonalID());
-                ps.setString(4, member.getEmail());
-                ps.setString(5, member.getPhone());
-                LocalDate dob = member.getDateOfBirth();
-                ps.setDate(6, java.sql.Date.valueOf(dob));
-                ps.setString(7, member.getPatientType());
-                ps.setLong(8, member.getMedicalRecord().getId());
-                ps.setString(9, member.getMembershipNumber());
-                ps.setString(10, member.getMembershipType().name());
+            try (PreparedStatement ps = connection.prepareStatement(sql2)) {
+                ChildPatient cP = (ChildPatient) patient;
+                ps.setLong(1, cP.getId());
+                ps.setString(2, cP.getGuardianName());
+                ps.setString(3, cP.getGuardianId());
 
                 int insertedRows = ps.executeUpdate();
-                ;
+                System.out.println("Inserted " + insertedRows + " rows in child_patient");
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else if (patient.getPatientType().equals("member")) {
+            String sql3 = """
+                    INSERT INTO member_patient (patient_id, membership_number, membership)
+                    VALUES (?, ?, ?::membership_type)
+                    """;
+            try (PreparedStatement ps = connection.prepareStatement(sql3)) {
+                MemberPatient mP = (MemberPatient) patient;
+                ps.setLong(1, mP.getId());
+                ps.setString(2, mP.getMembershipNumber());
+                ps.setString(3, mP.getMembershipType().name());
+
+                int insertedRows = ps.executeUpdate();
                 System.out.println("Inserted " + insertedRows + " rows in member_patient");
 
             } catch (SQLException e) {
@@ -193,51 +190,74 @@ public class ClinicRepository {
     }
 
     public Optional<Patient> getPatientById(Connection connection, long id) {
-        String[] patientTables = {"child_patient", "adult_patient", "member_patient"};
+        String sql = """
+            SELECT *
+            FROM patient
+            WHERE id = ?
+        """;
 
-        for (String table : patientTables) {
-            String sql = "SELECT * FROM " + table + " WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String firstName = rs.getString("first_name");
+                    String lastName = rs.getString("last_name");
+                    String personalID = rs.getString("personal_ID");
+                    String email = rs.getString("email");
+                    String phone = rs.getString("phone");
+                    LocalDate birthDate = rs.getDate("birth_date").toLocalDate();
+                    long medRecordId = rs.getLong("medical_record_id");
+                    String patientType = rs.getString("patient_type");
 
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setLong(1, id);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        long idPatient = rs.getLong("id");
-                        String firstName = rs.getString("first_name");
-                        String lastName = rs.getString("last_name");
-                        String personalID = rs.getString("personal_ID");
-                        String email = rs.getString("email");
-                        String phone = rs.getString("phone");
-                        LocalDate birthDate = rs.getDate("birth_date").toLocalDate();
-                        long medRecordId = rs.getLong("medical_record_id");
-                        String patientType = rs.getString("patient_type");
+                    Optional<MedicalRecord> optionalMedRec = getMedicalRecordById(connection, medRecordId);
+                    if (optionalMedRec.isEmpty()) return Optional.empty();
+                    MedicalRecord medicalRecord = optionalMedRec.get();
 
-                        Optional<MedicalRecord> optionalMedRec = getMedicalRecordById(connection, medRecordId);
-                        if (optionalMedRec.isEmpty()) return Optional.empty();
-                        MedicalRecord medicalRecord = optionalMedRec.get();
-
-                        switch (patientType) {
-                            case "child" -> {
-                                String guardianName = rs.getString("guardian_name");
-                                String guardianId = rs.getString("guardian_id");
-                                return Optional.of(new ChildPatient(idPatient, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, guardianName, guardianId));
+                    switch (patientType) {
+                        case "child" -> {
+                            String childSql = "SELECT * FROM child_patient WHERE patient_id = ?";
+                            try (PreparedStatement childPs = connection.prepareStatement(childSql)) {
+                                childPs.setLong(1, id);
+                                try (ResultSet childRs = childPs.executeQuery()) {
+                                    if (childRs.next()) {
+                                        String guardianName = childRs.getString("guardian_name");
+                                        String guardianId = childRs.getString("guardian_id");
+                                        return Optional.of(new ChildPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, guardianName, guardianId));
+                                    }
+                                }
                             }
-                            case "adult" -> {
-                                String insuranceStr = rs.getString("health_insurance");
-                                HealthInsurance insurance = HealthInsurance.valueOf(insuranceStr);
-                                return Optional.of(new AdultPatient(idPatient, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, insurance));
+                        }
+                        case "adult" -> {
+                            String adultSql = "SELECT * FROM adult_patient WHERE patient_id = ?";
+                            try (PreparedStatement adultPs = connection.prepareStatement(adultSql)) {
+                                adultPs.setLong(1, id);
+                                try (ResultSet adultRs = adultPs.executeQuery()) {
+                                    if (adultRs.next()) {
+                                        String insuranceStr = adultRs.getString("health_insurance");
+                                        HealthInsurance insurance = HealthInsurance.valueOf(insuranceStr);
+                                        return Optional.of(new AdultPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, insurance));
+                                    }
+                                }
                             }
-                            case "member" -> {
-                                String membershipNumber = rs.getString("membership_number");
-                                Membership membership = Membership.valueOf(rs.getString("membership"));
-                                return Optional.of(new MemberPatient(idPatient, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, membershipNumber, membership));
+                        }
+                        case "member" -> {
+                            String memberSql = "SELECT * FROM member_patient WHERE patient_id = ?";
+                            try (PreparedStatement memberPs = connection.prepareStatement(memberSql)) {
+                                memberPs.setLong(1, id);
+                                try (ResultSet memberRs = memberPs.executeQuery()) {
+                                    if (memberRs.next()) {
+                                        String membershipNumber = memberRs.getString("membership_number");
+                                        Membership membership = Membership.valueOf(memberRs.getString("membership"));
+                                        return Optional.of(new MemberPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, membershipNumber, membership));
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return Optional.empty();
@@ -246,16 +266,17 @@ public class ClinicRepository {
     public void insertMedicalService(Connection connection, MedicalServices medicalService) {
 
         String sql = """
-                    INSERT INTO medical_service (service_name , service_price, service_time)
-                    VALUES (?, ?, ?)
-                    """;
+                INSERT INTO medical_service (service_name , service_price, service_time)
+                VALUES (?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, medicalService.getServiceName());
             ps.setDouble(2, medicalService.getServicePrice());
             ps.setInt(3, medicalService.getServiceTime());
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in medical_service");
 
         } catch (SQLException e) {
@@ -270,11 +291,9 @@ public class ClinicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
-            try (ResultSet result = ps.executeQuery())
-            {
+            try (ResultSet result = ps.executeQuery()) {
                 if (result.next()) {
                     return Optional.of(new MedicalServices(
                             result.getLong("id"),
@@ -293,15 +312,16 @@ public class ClinicRepository {
     public void insertSpecialty(Connection connection, Specialty specialty) {
 
         String sql = """
-                    INSERT INTO specialty (specialty_name, starting_salary)
-                    VALUES (?, ?)
-                    """;
+                INSERT INTO specialty (specialty_name, starting_salary)
+                VALUES (?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, specialty.getSpecialtyName());
             ps.setDouble(2, specialty.getStartingSalary());
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in specialty");
 
         } catch (SQLException e) {
@@ -316,11 +336,9 @@ public class ClinicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
-            try (ResultSet result = ps.executeQuery())
-            {
+            try (ResultSet result = ps.executeQuery()) {
                 if (result.next()) {
                     return Optional.of(new Specialty(
                             result.getLong("id"),
@@ -335,17 +353,18 @@ public class ClinicRepository {
         return Optional.empty();
     }
 
-    public void insertSpecialtyMedicalService(Connection connection,long specialtyId, long medicalServiceId) {
+    public void insertSpecialtyMedicalService(Connection connection, long specialtyId, long medicalServiceId) {
         String sql = """
-                    INSERT INTO specialty_medical_service ( specialty_id, medical_service_id )
-                    VALUES (?, ?)
-                    """;
+                INSERT INTO specialty_medical_service ( specialty_id, medical_service_id )
+                VALUES (?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setLong(1,specialtyId );
+            ps.setLong(1, specialtyId);
             ps.setLong(2, medicalServiceId);
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in specialty_medical_service");
 
         } catch (SQLException e) {
@@ -356,11 +375,11 @@ public class ClinicRepository {
 
     public Optional<List<MedicalServices>> getMedicalServicesForSpecialty(Connection connection, long specialtyId) {
         String sql = """
-        SELECT ms.id, ms.service_name, ms.service_price, ms.service_time
-        FROM specialty_medical_service sms
-        JOIN medical_service ms ON sms.medical_service_id = ms.id
-        WHERE sms.specialty_id = ?
-    """;
+                    SELECT ms.id, ms.service_name, ms.service_price, ms.service_time
+                    FROM specialty_medical_service sms
+                    JOIN medical_service ms ON sms.medical_service_id = ms.id
+                    WHERE sms.specialty_id = ?
+                """;
 
         List<MedicalServices> services = new ArrayList<>();
 
@@ -389,10 +408,10 @@ public class ClinicRepository {
     public void insertDoctor(Connection connection, Doctor doctor) {
 
         String sql = """
-                    INSERT INTO doctor (first_name, last_name, personal_ID,
-                                               email, phone, birth_date, hire_date,specialty_id, salary )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """;
+                INSERT INTO doctor (first_name, last_name, personal_ID,
+                                           email, phone, birth_date, hire_date,specialty_id, salary )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, doctor.getFirstName());
@@ -407,7 +426,7 @@ public class ClinicRepository {
             ps.setLong(8, doctor.getSpecialty().getId());
             ps.setDouble(9, doctor.getSalary());
 
-            int insertedRows =  ps.executeUpdate();
+            int insertedRows = ps.executeUpdate();
             System.out.println("Inserted " + insertedRows + " rows in doctor");
 
 
@@ -422,14 +441,14 @@ public class ClinicRepository {
         }
 
         String sql2 = """
-                    INSERT INTO schedule (doctor_id)
-                    VALUES (?)
-                    """;
+                INSERT INTO schedule (doctor_id)
+                VALUES (?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql2, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, doctor.getId());
 
-            int insertedRows =  ps.executeUpdate();
+            int insertedRows = ps.executeUpdate();
             System.out.println("Inserted " + insertedRows + " rows in schedule");
 
 
@@ -445,17 +464,17 @@ public class ClinicRepository {
 
 
         String sql3 = """
-                    INSERT INTO time_interval (schedule_id, day, start_time, end_time)
-                    VALUES (?, ?, ?, ?)
-                    """;
+                INSERT INTO time_interval (schedule_id, day, start_time, end_time)
+                VALUES (?, ?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql3)) {
             TimeInterval[][] timeInterval = doctor.getSchedule().getSchedule();
-            for(int day=0; day<timeInterval.length; day++) {
+            for (int day = 0; day < timeInterval.length; day++) {
                 TimeInterval[] intervals = timeInterval[day];
-                for(int interval=0; interval<intervals.length; interval++) {
+                for (int interval = 0; interval < intervals.length; interval++) {
                     TimeInterval specificInterval = intervals[interval];
-                    if(specificInterval != null) {
+                    if (specificInterval != null) {
                         ps.setLong(1, doctor.getSchedule().getId());
                         ps.setInt(2, day);
                         ps.setTime(3, Time.valueOf(specificInterval.start()));
@@ -476,20 +495,20 @@ public class ClinicRepository {
 
     public Optional<Doctor> getDoctorById(Connection connection, long id) {
         String sql = """
-        SELECT 
-            d.id as doctor_id,
-            d.first_name, d.last_name, d.personal_ID, d.email, d.phone,
-            d.birth_date, d.hire_date, d.salary,
-            s.id as schedule_id,
-            t.day, t.start_time, t.end_time,
-            sp.id as specialty_id, sp.specialty_name, sp.starting_salary
-        FROM doctor d
-        LEFT JOIN schedule s ON d.id = s.doctor_id
-        LEFT JOIN time_interval t ON s.id = t.schedule_id
-        LEFT JOIN specialty sp ON d.specialty_id = sp.id
-        WHERE d.id = ?
-        ORDER BY t.day, t.start_time
-        """;
+                SELECT 
+                    d.id as doctor_id,
+                    d.first_name, d.last_name, d.personal_ID, d.email, d.phone,
+                    d.birth_date, d.hire_date, d.salary,
+                    s.id as schedule_id,
+                    t.day, t.start_time, t.end_time,
+                    sp.id as specialty_id, sp.specialty_name, sp.starting_salary
+                FROM doctor d
+                LEFT JOIN schedule s ON d.id = s.doctor_id
+                LEFT JOIN time_interval t ON s.id = t.schedule_id
+                LEFT JOIN specialty sp ON d.specialty_id = sp.id
+                WHERE d.id = ?
+                ORDER BY t.day, t.start_time
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -544,16 +563,17 @@ public class ClinicRepository {
     public void insertMedicationTreatment(Connection connection, MedicationTreatment medicationTreatment) {
 
         String sql = """
-                    INSERT INTO medication_treatment (medication_name, dosage, treatment_interval)
-                    VALUES (?, ?, ?)
-                    """;
+                INSERT INTO medication_treatment (medication_name, dosage, treatment_interval)
+                VALUES (?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, medicationTreatment.getMedicationName());
             ps.setDouble(2, medicationTreatment.getDosage());
             ps.setInt(3, medicationTreatment.getTreatmentInterval());
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in medication_treatment");
 
         } catch (SQLException e) {
@@ -568,11 +588,9 @@ public class ClinicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
-            try (ResultSet result = ps.executeQuery())
-            {
+            try (ResultSet result = ps.executeQuery()) {
                 if (result.next()) {
                     return Optional.of(new MedicationTreatment(
                             result.getLong("id"),
@@ -591,16 +609,17 @@ public class ClinicRepository {
     public void insertPhysiotherapyTreatment(Connection connection, PhysiotherapyTreatment phy) {
 
         String sql = """
-                    INSERT INTO physiotherapy_treatment (exercise_name, repetitions, medical_issues)
-                    VALUES (?, ?, ?)
-                    """;
+                INSERT INTO physiotherapy_treatment (exercise_name, repetitions, medical_issues)
+                VALUES (?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, phy.getExerciseName());
             ps.setInt(2, phy.getRepetitions());
             ps.setString(3, phy.getMedicalIssues());
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in physiotherapy_treatment");
 
         } catch (SQLException e) {
@@ -615,11 +634,9 @@ public class ClinicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql))
-        {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
-            try (ResultSet result = ps.executeQuery())
-            {
+            try (ResultSet result = ps.executeQuery()) {
                 if (result.next()) {
                     return Optional.of(new PhysiotherapyTreatment(
                             result.getLong("id"),
@@ -638,15 +655,16 @@ public class ClinicRepository {
     public void insertDiagnostic(Connection connection, Diagnostic diagnostic) {
 
         String sql = """
-                    INSERT INTO diagnostic (diagnostic_name)
-                    VALUES (?)
-                    """;
+                INSERT INTO diagnostic (diagnostic_name)
+                VALUES (?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, diagnostic.getName());
 
 
-            int insertedRows =  ps.executeUpdate();;
+            int insertedRows = ps.executeUpdate();
+            ;
             System.out.println("Inserted " + insertedRows + " rows in diagnostic");
 
             ResultSet result = ps.getGeneratedKeys();
@@ -660,25 +678,25 @@ public class ClinicRepository {
         }
 
         String sql2 = """
-                    INSERT INTO diagnostic_treatment (diagnostic_id, treatment_id, treatment_type)
-                    VALUES (?, ?, ?)
-                    """;
+                INSERT INTO diagnostic_treatment (diagnostic_id, treatment_id, treatment_type)
+                VALUES (?, ?, ?)
+                """;
 
         List<Treatment> treatment = diagnostic.getTreatments();
-        for(Treatment t : treatment) {
+        for (Treatment t : treatment) {
 
             try (PreparedStatement ps = connection.prepareStatement(sql2)) {
                 ps.setLong(1, diagnostic.getId());
-                if(t.treatmentType().equals("Medication treatment")){
+                if (t.treatmentType().equals("Medication treatment")) {
                     MedicationTreatment med = (MedicationTreatment) t;
                     ps.setLong(2, med.getId());
-                }
-                else {
+                } else {
                     PhysiotherapyTreatment phy = (PhysiotherapyTreatment) t;
                     ps.setLong(2, phy.getId());
                 }
                 ps.setString(3, t.treatmentType());
-                int insertedRows =  ps.executeUpdate();;
+                int insertedRows = ps.executeUpdate();
+                ;
                 System.out.println("Inserted " + insertedRows + " rows in diagnostic_treatment");
 
             } catch (SQLException e) {
@@ -712,11 +730,11 @@ public class ClinicRepository {
 
                             switch (type) {
                                 case "Medication treatment" -> {
-                                    Optional <MedicationTreatment> optMed = getMedicationTreatmentById(connection, treatmentId);
+                                    Optional<MedicationTreatment> optMed = getMedicationTreatmentById(connection, treatmentId);
                                     optMed.ifPresent(treatments::add);
                                 }
                                 case "Physiotherapy treatment" -> {
-                                    Optional <PhysiotherapyTreatment> optPhy = getPhysiotherapyTreatmentById(connection, treatmentId);
+                                    Optional<PhysiotherapyTreatment> optPhy = getPhysiotherapyTreatmentById(connection, treatmentId);
                                     optPhy.ifPresent(treatments::add);
                                 }
                             }
@@ -732,28 +750,110 @@ public class ClinicRepository {
 
     public void insertAppointment(Connection connection, Appointment appointment) {
 
-            String sql = """
-                    INSERT INTO child_patient (doctor_id, patient_id, appointment_date, 
-                                               appointment_interval_id, medical_service_id, diagnostic_id)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """;
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setLong(1, appointment.getDoctor().getId());
-                ps.setLong(2, appointment.getPatient().getId());
-                LocalDate dA = appointment.getAppointmentDate();
-                ps.setDate(3, java.sql.Date.valueOf(dA));
-                ps.setLong(4, appointment.getAppointmentInterval().getId());
-
-                int insertedRows = ps.executeUpdate();
-
-                System.out.println("Inserted " + insertedRows + " rows in child_patient");
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+        String sql = """
+                INSERT INTO appointment (doctor_id, patient_id, appointment_date, 
+                                        medical_service_id, diagnostic_id)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setLong(1, appointment.getDoctor().getId());
+            ps.setLong(2, appointment.getPatient().getId());
+            LocalDate dA = appointment.getAppointmentDate();
+            ps.setDate(3, java.sql.Date.valueOf(dA));
+            ps.setLong(4, appointment.getMedicalService().getId());
+            if (appointment.getDiagnostic() != null) {
+                ps.setLong(5, appointment.getDiagnostic().getId());
+            } else {
+                ps.setNull(5, Types.NULL);
             }
 
+            int insertedRows = ps.executeUpdate();
 
+            System.out.println("Inserted " + insertedRows + " rows in appointment");
 
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                long appointmentId = rs.getLong(1);
+                appointment.setId(appointmentId);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        String sql2 = """
+                INSERT INTO appointment_time_interval (appointment_id, start_appointment, end_appointment)
+                VALUES (?, ?, ?)
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql2)) {
+            ps.setLong(1, appointment.getId());
+            Time timeStart = Time.valueOf(appointment.getAppointmentInterval().start());
+            ps.setTime(2, timeStart);
+            Time timeEnd = Time.valueOf(appointment.getAppointmentInterval().end());
+            ps.setTime(3, timeEnd);
+
+            int insertedRows = ps.executeUpdate();
+
+            System.out.println("Inserted " + insertedRows + " rows in appointment_time_interval");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    public Optional<Appointment> getAppointmentById(Connection connection, long id) {
+        String sqlAppointment = "SELECT * FROM appointment WHERE id = ?";
+        String sqlInterval = "SELECT start_appointment, end_appointment FROM appointment_time_interval WHERE appointment_id = ?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sqlAppointment)) {
+            ps.setLong(1, id);
+
+            try (ResultSet result = ps.executeQuery()) {
+                if (!result.next()) return Optional.empty();
+
+                Optional<Doctor> optDoc = getDoctorById(connection, result.getLong("doctor_id"));
+                Optional<Patient> optPat = getPatientById(connection, result.getLong("patient_id"));
+                LocalDate date = result.getDate("appointment_date").toLocalDate();
+                Optional<MedicalServices> optServ = getMedicalServiceById(connection, result.getLong("medical_service_id"));
+                //Optional<Diagnostic> optDiag = getDiagnosticById(connection, result.getLong("diagnostic_id"));
+                Optional<Diagnostic> optDiag = Optional.empty();
+                long diagId = result.getLong("diagnostic_id");
+                Diagnostic diag = null;
+                if (!result.wasNull()) {
+                    optDiag = getDiagnosticById(connection, diagId);
+                    diag = (Diagnostic) optDiag.get();
+                }
+
+                Doctor doc = (Doctor) optDoc.get();
+                Patient pat = (Patient) optPat.get();
+                MedicalServices serv = (MedicalServices) optServ.get();
+
+
+
+                try (PreparedStatement ps2 = connection.prepareStatement(sqlInterval)) {
+                    ps2.setLong(1, id);
+
+                    try (ResultSet result2 = ps2.executeQuery()) {
+                        if (result2.next()) {
+                            LocalTime startT = result2.getTime("start_appointment").toLocalTime();
+                            LocalTime endT = result2.getTime("end_appointment").toLocalTime();
+
+                            TimeInterval interval = new TimeInterval(startT, endT);
+
+
+                            Appointment appointment = new Appointment(id, doc, pat, date, startT, serv, diag);
+                            return Optional.of(appointment);
+                        }
+                    }
+                }
+
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

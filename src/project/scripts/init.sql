@@ -23,18 +23,24 @@ CREATE TYPE health_insurance_type AS ENUM ('PUBLIC', 'UNINSURED');
 CREATE TYPE membership_type AS ENUM ('PLATINUM', 'GOLD', 'SILVER');
 
 CREATE TABLE adult_patient(
-    health_insurance health_insurance_type
-)INHERITS (patient);
+    patient_id BIGINT,
+    health_insurance health_insurance_type,
+    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+);
 
 CREATE TABLE child_patient(
+    patient_id BIGINT,
     guardian_name varchar(120),
-    guardian_id varchar(11)
-)INHERITS (patient);
+    guardian_id varchar(11),
+    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+);
 
 CREATE TABLE member_patient(
+    patient_id BIGINT,
     membership_number varchar(1000),
-    membership membership_type
-)INHERITS (patient);
+    membership membership_type,
+    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+);
 
 CREATE TABLE medical_service(
     id BIGSERIAL PRIMARY KEY,
@@ -114,26 +120,28 @@ CREATE TABLE diagnostic_treatment(
     PRIMARY KEY (diagnostic_id, treatment_id, treatment_type)
 );
 
-CREATE TABLE appointment_time_interval(
-    id BIGSERIAL PRIMARY KEY,
-    start_appointment time,
-    end_appointment time
+CREATE TABLE appointment(
+                            id BIGSERIAL PRIMARY KEY,
+                            doctor_id BIGINT,
+                            patient_id BIGINT,
+                            appointment_date DATE,
+                            medical_service_id BIGINT,
+                            diagnostic_id BIGINT,
+                            FOREIGN KEY (doctor_id) REFERENCES doctor(id) ON DELETE SET NULL,
+                            FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE SET NULL,
+                            FOREIGN KEY (medical_service_id) REFERENCES medical_service(id) ON DELETE SET NULL,
+                            FOREIGN KEY (diagnostic_id) REFERENCES diagnostic(id) ON DELETE SET NULL
 );
 
-CREATE TABLE appointment(
+CREATE TABLE appointment_time_interval(
     id BIGSERIAL PRIMARY KEY,
-    doctor_id BIGINT,
-    patient_id BIGINT,
-    appointment_date DATE,
-    appointment_interval_id BIGINT,
-    medical_service_id BIGINT,
-    diagnostic_id BIGINT,
-    FOREIGN KEY (doctor_id) REFERENCES doctor(id) ON DELETE SET NULL,
-    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE SET NULL,
-    FOREIGN KEY (appointment_interval_id) REFERENCES appointment_time_interval(id) ON DELETE SET NULL,
-    FOREIGN KEY (medical_service_id) REFERENCES medical_service(id) ON DELETE SET NULL,
-    FOREIGN KEY (diagnostic_id) REFERENCES diagnostic(id) ON DELETE SET NULL
+    appointment_id BIGINT NOT NULL,
+    start_appointment time,
+    end_appointment time,
+    FOREIGN KEY (appointment_id) REFERENCES appointment(id) ON DELETE CASCADE
 );
+
+
 
 
 

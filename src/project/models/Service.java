@@ -23,7 +23,7 @@ public class Service {
     }
 
     public Appointment findAppointment(int appointmentId) {
-        return appointments.stream().filter(appointment -> appointment.getAppointmentId() == appointmentId).findFirst().orElse(null);
+        return appointments.stream().filter(appointment -> appointment.getId() == appointmentId).findFirst().orElse(null);
 
     }
 

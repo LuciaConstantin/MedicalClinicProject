@@ -33,6 +33,26 @@ public class Appointment {
         this.diagnostic = null;
     }
 
+    public Appointment(Doctor doctor, Patient patient, LocalDate appointmentDate, LocalTime appointmentStart,  MedicalServices medicalService, Diagnostic diagnostic) {
+        this.doctor = doctor;
+        this.patient = patient;
+        this.appointmentDate = appointmentDate;
+        LocalTime appointmentEnd = appointmentStart.plusMinutes(medicalService.getServiceTime());
+        this.appointmentInterval = new TimeInterval(appointmentStart, appointmentEnd);
+        this.medicalService = medicalService;
+        this.diagnostic = diagnostic;
+    }
+
+    public Appointment(long id, Doctor doctor, Patient patient, LocalDate appointmentDate, LocalTime appointmentStart,  MedicalServices medicalService, Diagnostic diagnostic) {
+        this.id= id;
+        this.doctor = doctor;
+        this.patient = patient;
+        this.appointmentDate = appointmentDate;
+        LocalTime appointmentEnd = appointmentStart.plusMinutes(medicalService.getServiceTime());
+        this.appointmentInterval = new TimeInterval(appointmentStart, appointmentEnd);
+        this.medicalService = medicalService;
+        this.diagnostic = diagnostic;
+    }
 
 
 

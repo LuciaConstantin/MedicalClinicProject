@@ -133,4 +133,18 @@ public class ClinicService {
         return client.orElseThrow(PhysiothraphyTreatment::new);
     }
 
+
+    public void insertAppointmentDb(Appointment appointment) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.insertAppointment(connection, appointment);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Appointment getAppointmentDb(long id) {
+        Optional<Appointment> client = clinicRepository.getAppointmentById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(PhysiothraphyTreatment::new);
+    }
+
 }

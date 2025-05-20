@@ -33,8 +33,12 @@ public class Main {
         Patient patient2 = new MemberPatient("Andrei", "Popescu", "508345678986", "andpo@gmail.com",
                 "0734567898", LocalDate.parse("2000-11-09"), medRec, "10", Membership.GOLD);
 
-        Patient newPatient = serviceDataBase.getPatientByIdDB(7);
+        //serviceDataBase.insertPatientDB(patient2);
+
+
+        Patient newPatient = serviceDataBase.getPatientByIdDB(1);
         System.out.println(newPatient.getId());
+        System.out.println(newPatient);
 
         MedicalServices medicalService1 = new MedicalServices("ultrasound", 100, 35);
 
@@ -106,6 +110,26 @@ public class Main {
         Diagnostic diagDb = serviceDataBase.getDiagnosticDb(1);
         System.out.println(diagDb);
         System.out.println(diagDb.getId());
+
+
+        Appointment appointment = new Appointment(doc, newPatient, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0),med);
+       // serviceDataBase.insertAppointmentDb(appointment);
+
+        Appointment appointment2 = new Appointment(doc, newPatient, LocalDate.parse("2024-04-08"), LocalTime.of(9, 25), med, diagDb);
+        //serviceDataBase.insertAppointmentDb(appointment2);
+
+        Appointment app1 = serviceDataBase.getAppointmentDb(2);
+        Appointment app2 = serviceDataBase.getAppointmentDb(4);
+
+        System.out.println(app1);
+        System.out.println(app2);
+        System.out.println(app1.getId());
+        System.out.println(app2.getId());
+
+
+
+
+
 
         /*
         String[] endocrinologyConditions = {"thyroid problems", "infertility", "bone disorders"};
