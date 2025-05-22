@@ -1,0 +1,21 @@
+---
+title: Clinic database
+---
+erDiagram
+    patient ||--|| adult_patient : has
+    patient ||--|| child_patient : has
+    patient ||--|| member_patient : has
+    patient ||--|| medical_record : has
+
+    specialty }|..|{ medical_service : offers
+    doctor ||--|{ schedule : has
+    doctor }|..|| specialty : has
+
+    diagnostic }|..|{ medical_treatment : includes
+    diagnostic }|..|{ physiotherapy_treatment : includes
+
+    appointment }|..|| doctor : contains
+    appointment }|..|| patient : contains
+    appointment }|..|| medical_service : contains
+    appointment ||..o| diagnostic : contains
+

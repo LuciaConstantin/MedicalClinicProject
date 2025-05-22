@@ -15,13 +15,7 @@ public class ClinicService {
 
     public ClinicService() {}
 
-    public void insertMedicalRecord(MedicalRecord medicalRecord) {
-        try (Connection connection = ConnectionProvider.getConnection()) {
-            clinicRepository.insertDataMedicalRecord(connection, medicalRecord);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     public MedicalRecord getMedicalRecordUsingId(long id) {
         Optional<MedicalRecord> client = clinicRepository.getMedicalRecordById(ConnectionProvider.getConnection(), id);
@@ -62,24 +56,11 @@ public class ClinicService {
         }
     }
 
+
     public Specialty getSpecialtyByIdDB(long id) {
         Optional<Specialty> client = clinicRepository.getSpecialtyById(ConnectionProvider.getConnection(), id);
         return client.orElseThrow(MedicalServiceException::new);
     }
-
-    public void insertSpecialtyMedicalServiceDB(long specialtyId, long medicalServiceId) {
-        try (Connection connection = ConnectionProvider.getConnection()) {
-            clinicRepository.insertSpecialtyMedicalService(connection, specialtyId, medicalServiceId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<MedicalServices> getMedicalServicesForSpecialtyById(long id) {
-        Optional<List<MedicalServices> > client = clinicRepository.getMedicalServicesForSpecialty(ConnectionProvider.getConnection(), id);
-        return client.orElseThrow(MedicalServiceSpecialtyException::new);
-    }
-
 
     public void insertDoctorDb(Doctor doctor) {
         try (Connection connection = ConnectionProvider.getConnection()) {
@@ -93,6 +74,7 @@ public class ClinicService {
         Optional<Doctor> client = clinicRepository.getDoctorById(ConnectionProvider.getConnection(), id);
         return client.orElseThrow(DoctorException::new);
     }
+
 
     public void insertMedicationTreatmentDb(MedicationTreatment med) {
         try (Connection connection = ConnectionProvider.getConnection()) {
@@ -146,5 +128,39 @@ public class ClinicService {
         Optional<Appointment> client = clinicRepository.getAppointmentById(ConnectionProvider.getConnection(), id);
         return client.orElseThrow(PhysiothraphyTreatment::new);
     }
+
+    public void deleteAppointmentById(long id) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.deleteAppointment(connection, id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deletePatientById(long id) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.deletePatient(connection, id);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public void updateAppointmentDiagnosticBd(long appointmentId, long diagnosticId ) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.updateAppointmentDiagnostic(connection, appointmentId, diagnosticId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void rescheduleAppointmentDb(Appointment appointment) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            clinicRepository.rescheduleAppointment(connection, appointment);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

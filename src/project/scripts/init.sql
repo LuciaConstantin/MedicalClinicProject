@@ -1,11 +1,4 @@
-CREATE TABLE medical_record(
-    id BIGSERIAL PRIMARY KEY,
-    allergies TEXT[],
-    chronic_conditions TEXT[],
-    physical_restrictions TEXT[]
-);
-
-CREATE TABLE patient(
+CREATE TABLE patients(
     id BIGSERIAL PRIMARY KEY,
     first_name varchar(40),
     last_name varchar(40),
@@ -13,34 +6,42 @@ CREATE TABLE patient(
     email varchar(100),
     phone varchar(11),
     birth_date date,
-    patient_type varchar(25),
-    medical_record_id BIGINT,
-    FOREIGN KEY(medical_record_id) REFERENCES medical_record(id) ON DELETE SET NULL
+    patient_type varchar(25)
 
+);
+
+CREATE TABLE medical_records(
+     id_patient BIGSERIAL PRIMARY KEY,
+     allergies TEXT[],
+     chronic_conditions TEXT[],
+     physical_restrictions TEXT[],
+     FOREIGN KEY(id_patient) REFERENCES patients(id) ON DELETE CASCADE
 );
 
 CREATE TYPE health_insurance_type AS ENUM ('PUBLIC', 'UNINSURED');
 CREATE TYPE membership_type AS ENUM ('PLATINUM', 'GOLD', 'SILVER');
 
-CREATE TABLE adult_patient(
+CREATE TABLE adult_patients(
     patient_id BIGINT,
     health_insurance health_insurance_type,
-    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE TABLE child_patient(
+CREATE TABLE child_patients(
     patient_id BIGINT,
     guardian_name varchar(120),
     guardian_id varchar(11),
-    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
 
-CREATE TABLE member_patient(
+CREATE TABLE member_patients(
     patient_id BIGINT,
     membership_number varchar(1000),
     membership membership_type,
-    FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
 );
+
+
 
 CREATE TABLE medical_service(
     id BIGSERIAL PRIMARY KEY,
@@ -55,6 +56,7 @@ CREATE TABLE specialty(
     starting_salary numeric(9, 2)
 );
 
+
 CREATE TABLE specialty_medical_service(
     specialty_id BIGINT,
     FOREIGN KEY(specialty_id) REFERENCES specialty(id) ON DELETE CASCADE,
@@ -63,35 +65,6 @@ CREATE TABLE specialty_medical_service(
 
 );
 
-CREATE TABLE doctor(
-    id BIGSERIAL PRIMARY KEY,
-    first_name varchar(40),
-    last_name varchar(40),
-    personal_ID varchar(30) UNIQUE,
-    email varchar(100),
-    phone varchar(11),
-    birth_date date,
-    hire_date date,
-    specialty_id BIGINT,
-    salary numeric(9, 2),
-    FOREIGN KEY(specialty_id) REFERENCES specialty(id) ON DELETE SET NULL
-);
-
-CREATE TABLE schedule(
-    id BIGSERIAL PRIMARY KEY,
-    doctor_id bigint NOT NULL,
-    FOREIGN KEY(doctor_id) REFERENCES doctor(id) ON DELETE CASCADE
-);
-
-CREATE TABLE time_interval(
-    id BIGSERIAL PRIMARY KEY,
-    schedule_id bigint,
-    day int,
-    start_time time,
-    end_time time,
-    FOREIGN KEY(schedule_id) REFERENCES schedule(id) ON DELETE CASCADE
-
-);
 
 CREATE TABLE medication_treatment(
     id BIGSERIAL PRIMARY KEY,
@@ -128,7 +101,7 @@ CREATE TABLE appointment(
                             medical_service_id BIGINT,
                             diagnostic_id BIGINT,
                             FOREIGN KEY (doctor_id) REFERENCES doctor(id) ON DELETE SET NULL,
-                            FOREIGN KEY (patient_id) REFERENCES patient(id) ON DELETE SET NULL,
+                            FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL,
                             FOREIGN KEY (medical_service_id) REFERENCES medical_service(id) ON DELETE SET NULL,
                             FOREIGN KEY (diagnostic_id) REFERENCES diagnostic(id) ON DELETE SET NULL
 );
@@ -141,10 +114,30 @@ CREATE TABLE appointment_time_interval(
     FOREIGN KEY (appointment_id) REFERENCES appointment(id) ON DELETE CASCADE
 );
 
+CREATE TABLE doctor(
+                       id BIGSERIAL PRIMARY KEY,
+                       first_name varchar(40),
+                       last_name varchar(40),
+                       personal_ID varchar(30) UNIQUE,
+                       email varchar(100),
+                       phone varchar(11),
+                       birth_date date,
+                       hire_date date,
+                       specialty_id BIGINT,
+                       salary numeric(9, 2),
+                       FOREIGN KEY(specialty_id) REFERENCES specialty(id) ON DELETE SET NULL
+);
 
 
+CREATE TABLE schedule(
+        id BIGSERIAL PRIMARY KEY,
+        doctor_id bigint,
+        day int,
+        start_time time,
+        end_time time,
+        FOREIGN KEY(doctor_id) REFERENCES doctor(id) ON DELETE CASCADE
 
-
+);
 
 
 

@@ -18,6 +18,14 @@ public class Specialty {
 
     }
 
+    public Specialty(long id, String specialtyName,  double startingSalary, MedicalServices[] medicalServices) {
+        this.id = id;
+        this.specialtyName = specialtyName;
+        this.startingSalary = startingSalary;
+        this.medicalServices = medicalServices;
+
+    }
+
     public Specialty(long id, String specialtyName,  double startingSalary) {
         this.id = id;
         this.specialtyName = specialtyName;
@@ -25,10 +33,7 @@ public class Specialty {
 
     }
 
-    public Specialty(String specialtyName,  double startingSalary) {
-        this.specialtyName = specialtyName;
-        this.startingSalary = startingSalary;
-    }
+
 
 
     public String getSpecialtyName() {

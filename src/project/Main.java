@@ -24,7 +24,65 @@ public class Main {
 
         MedicalRecord medicalRecord1 = new MedicalRecord(allergies2, chronicConditions, physicalRestrictions);
 
-        System.out.println(serviceDataBase.getMedicalRecordUsingId(4));
+        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
+                "0734567898", LocalDate.parse("1965-11-09"), medicalRecord1, HealthInsurance.PUBLIC);
+
+        //serviceDataBase.insertPatientDB(patient1);
+        Patient patient = serviceDataBase.getPatientByIdDB(3);
+
+        /*
+        System.out.println(patient);
+        System.out.println(patient.getId());
+        System.out.println(patient.getMedicalRecord().getId());
+        */
+
+
+        MedicalServices medS1= serviceDataBase.getMedicalServiceByIdDB(1);
+        MedicalServices medS2= serviceDataBase.getMedicalServiceByIdDB(2);
+        MedicalServices[] medSArr = {medS1, medS2};
+
+        Specialty spec = new Specialty("cardiology", 7000, medSArr);
+        //serviceDataBase.insertSpecialtyDB(spec);
+
+        //serviceDataBase.insertSpecialtyDB(specialty2);
+
+        Specialty retSpec = serviceDataBase.getSpecialtyByIdDB(3);
+        System.out.println(retSpec);
+        System.out.println(retSpec.getId());
+
+
+        Schedule schedule1 = new Schedule();
+        schedule1.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
+        schedule1.addToSchedule("Monday", LocalTime.of(13, 0), LocalTime.of(16, 0));
+        schedule1.addToSchedule("Friday", LocalTime.of(17, 0), LocalTime.of(18, 0));
+
+        Schedule schedule2 = new Schedule();
+        schedule2.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(20, 0));
+
+
+        Doctor doctor1 = new Doctor("Ana", "Anghel", "608653345678", "ana@gmail.com", "078656789", LocalDate.parse("1976-01-07"),
+                LocalDate.parse("2010-11-07"),  retSpec, schedule1);
+
+        //serviceDataBase.insertDoctorDb(doctor1);
+
+        Doctor doctorDb = serviceDataBase.getDoctorByIdDb(1);
+        System.out.println(doctorDb);
+        System.out.println(doctorDb.getId());
+
+        doctorDb.getSchedule().printSchedule();
+
+
+
+        Appointment appointment = new Appointment(doctorDb, patient, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0), medS1);
+        Appointment app = serviceDataBase.getAppointmentDb(1);
+        System.out.println(app);
+        serviceDataBase.updateAppointmentDiagnosticBd(app.getId(),  1);
+        app.setAppointmentDate(LocalDate.parse("2024-10-10"));
+
+        serviceDataBase.rescheduleAppointmentDb(app);
+
+
+        /*System.out.println(serviceDataBase.getMedicalRecordUsingId(4));
 
         MedicalRecord medRec = serviceDataBase.getMedicalRecordUsingId(4);
 
@@ -39,6 +97,8 @@ public class Main {
         Patient newPatient = serviceDataBase.getPatientByIdDB(1);
         System.out.println(newPatient.getId());
         System.out.println(newPatient);
+
+        //serviceDataBase.deletePatientById(3);
 
         MedicalServices medicalService1 = new MedicalServices("ultrasound", 100, 35);
 
@@ -126,10 +186,12 @@ public class Main {
         System.out.println(app1.getId());
         System.out.println(app2.getId());
 
+       // serviceDataBase.deleteAppointmentById(app1.getId());
 
 
 
 
+    */
 
         /*
         String[] endocrinologyConditions = {"thyroid problems", "infertility", "bone disorders"};
