@@ -15,8 +15,7 @@ public class ClinicService {
 
     public ClinicService() {}
 
-
-
+    /*
     public MedicalRecord getMedicalRecordUsingId(long id) {
         Optional<MedicalRecord> client = clinicRepository.getMedicalRecordById(ConnectionProvider.getConnection(), id);
         return client.orElseThrow(MedicalRecordException::new);
@@ -137,6 +136,7 @@ public class ClinicService {
         }
     }
 
+
     public void deletePatientById(long id) {
         try (Connection connection = ConnectionProvider.getConnection()) {
             clinicRepository.deletePatient(connection, id);
@@ -144,7 +144,6 @@ public class ClinicService {
             throw new RuntimeException(e);
         }
     }
-
 
     public void updateAppointmentDiagnosticBd(long appointmentId, long diagnosticId ) {
         try (Connection connection = ConnectionProvider.getConnection()) {
@@ -161,6 +160,6 @@ public class ClinicService {
             throw new RuntimeException(e);
         }
     }
-
+ */
 
 }

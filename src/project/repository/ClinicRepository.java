@@ -24,9 +24,10 @@ public class ClinicRepository {
         return instance;
     }
 
+    /*
     public Optional<MedicalRecord> getMedicalRecordById(Connection connection, long id) {
         String sql = """
-                SELECT * 
+                SELECT *
                 FROM medical_records
                 WHERE id_patient = ?
                 """;
@@ -257,7 +258,7 @@ public class ClinicRepository {
     public void deletePatient(Connection connection, long id) {
 
         String sql = """
-                DELETE FROM patient 
+                DELETE FROM patient
                 WHERE id = ?
                 """;
 
@@ -938,4 +939,6 @@ public class ClinicRepository {
         }
     }
 
+
+     */
 }

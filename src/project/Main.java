@@ -1,7 +1,7 @@
 package project;
 
 import project.models.*;
-import project.service.ClinicService;
+import project.service.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,6 +12,11 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        ClinicDAO<Patient> patientService = new PatientService();
+        ClinicDAO<MedicalServices> medicalService = new MedicalServiceService();
+        ClinicDAO<Specialty> specialtyService = new SpecialtyService();
+        ClinicDAO<Doctor> doctorService = new DoctorService();
+
         Service service = Service.getInstance();
         ClinicService serviceDataBase = new ClinicService();
 
@@ -27,14 +32,40 @@ public class Main {
         Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
                 "0734567898", LocalDate.parse("1965-11-09"), medicalRecord1, HealthInsurance.PUBLIC);
 
-        //serviceDataBase.insertPatientDB(patient1);
-        Patient patient = serviceDataBase.getPatientByIdDB(3);
+        Patient patient = patientService.getById(3);
 
-        /*
+
         System.out.println(patient);
         System.out.println(patient.getId());
         System.out.println(patient.getMedicalRecord().getId());
-        */
+
+
+        MedicalServices medS1= medicalService.getById(1);
+        MedicalServices medS2= medicalService.getById(2);
+        System.out.println(medS1);
+        System.out.println(medS2);
+
+        MedicalServices[] medSArr = {medS1, medS2};
+
+        Specialty spec = new Specialty("endocrinolgy", 7200, medSArr);
+        //specialtyService.create(spec);
+
+        Specialty specialty = specialtyService.getById(7);
+        System.out.println(specialty);
+
+
+        /*
+        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
+                "0734567898", LocalDate.parse("1965-11-09"), medicalRecord1, HealthInsurance.PUBLIC);
+
+        //serviceDataBase.insertPatientDB(patient1);
+        Patient patient = serviceDataBase.getPatientByIdDB(3);
+
+
+        System.out.println(patient);
+        System.out.println(patient.getId());
+        System.out.println(patient.getMedicalRecord().getId());
+
 
 
         MedicalServices medS1= serviceDataBase.getMedicalServiceByIdDB(1);
@@ -42,9 +73,9 @@ public class Main {
         MedicalServices[] medSArr = {medS1, medS2};
 
         Specialty spec = new Specialty("cardiology", 7000, medSArr);
-        //serviceDataBase.insertSpecialtyDB(spec);
+        serviceDataBase.insertSpecialtyDB(spec);
 
-        //serviceDataBase.insertSpecialtyDB(specialty2);
+        serviceDataBase.insertSpecialtyDB(specialty2);
 
         Specialty retSpec = serviceDataBase.getSpecialtyByIdDB(3);
         System.out.println(retSpec);
@@ -80,7 +111,7 @@ public class Main {
         app.setAppointmentDate(LocalDate.parse("2024-10-10"));
 
         serviceDataBase.rescheduleAppointmentDb(app);
-
+*/
 
         /*System.out.println(serviceDataBase.getMedicalRecordUsingId(4));
 
