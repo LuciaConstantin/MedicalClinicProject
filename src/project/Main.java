@@ -18,7 +18,6 @@ public class Main {
         ClinicDAO<Doctor> doctorService = new DoctorService();
 
         Service service = Service.getInstance();
-        ClinicService serviceDataBase = new ClinicService();
 
         String[] allergies1 = {"Pollen", "Almonds", "Penicillin"};
         List<String> allergies2 = Arrays.asList(allergies1);

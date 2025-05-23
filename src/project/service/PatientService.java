@@ -3,7 +3,6 @@ package project.service;
 import project.ClinicDAO;
 import project.config.ConnectionProvider;
 import project.models.Patient;
-import project.repository.ClinicRepository;
 import project.repository.PatientRepository;
 
 import java.sql.Connection;

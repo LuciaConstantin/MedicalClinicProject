@@ -5,3 +5,5 @@ public abstract class ClinicDAO <T> {
     public abstract T getById(long id);
 
 }
+
+
