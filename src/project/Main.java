@@ -1,285 +1,17 @@
 package project;
 
 import project.models.*;
-import project.service.*;
+import project.service.DoctorService;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) {
-        ClinicDAO<Patient> patientService = new PatientService();
-        ClinicDAO<MedicalServices> medicalService = new MedicalServiceService();
-        ClinicDAO<Specialty> specialtyService = new SpecialtyService();
-        ClinicDAO<Doctor> doctorService = new DoctorService();
-
         Service service = Service.getInstance();
-
-        String[] allergies1 = {"Pollen", "Almonds", "Penicillin"};
-        List<String> allergies2 = Arrays.asList(allergies1);
-        String[] chronicConditions1 = {"Thyroid disease", "Migraines"};
-        List<String> chronicConditions = Arrays.asList(chronicConditions1);
-        String[] physicalRestri = {"knee", "back issues"};
-        List<String> physicalRestrictions = Arrays.asList(physicalRestri);
-
-        MedicalRecord medicalRecord1 = new MedicalRecord(allergies2, chronicConditions, physicalRestrictions);
-
-        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
-                "0734567898", LocalDate.parse("1965-11-09"), medicalRecord1, HealthInsurance.PUBLIC);
-
-        Patient patient = patientService.getById(3);
-
-
-        System.out.println(patient);
-        System.out.println(patient.getId());
-        System.out.println(patient.getMedicalRecord().getId());
-
-
-        MedicalServices medS1= medicalService.getById(1);
-        MedicalServices medS2= medicalService.getById(2);
-        System.out.println(medS1);
-        System.out.println(medS2);
-
-        MedicalServices[] medSArr = {medS1, medS2};
-
-        Specialty spec = new Specialty("endocrinolgy", 7200, medSArr);
-        //specialtyService.create(spec);
-
-        Specialty specialty = specialtyService.getById(7);
-        System.out.println(specialty);
-
-
-        /*
-        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
-                "0734567898", LocalDate.parse("1965-11-09"), medicalRecord1, HealthInsurance.PUBLIC);
-
-        //serviceDataBase.insertPatientDB(patient1);
-        Patient patient = serviceDataBase.getPatientByIdDB(3);
-
-
-        System.out.println(patient);
-        System.out.println(patient.getId());
-        System.out.println(patient.getMedicalRecord().getId());
-
-
-
-        MedicalServices medS1= serviceDataBase.getMedicalServiceByIdDB(1);
-        MedicalServices medS2= serviceDataBase.getMedicalServiceByIdDB(2);
-        MedicalServices[] medSArr = {medS1, medS2};
-
-        Specialty spec = new Specialty("cardiology", 7000, medSArr);
-        serviceDataBase.insertSpecialtyDB(spec);
-
-        serviceDataBase.insertSpecialtyDB(specialty2);
-
-        Specialty retSpec = serviceDataBase.getSpecialtyByIdDB(3);
-        System.out.println(retSpec);
-        System.out.println(retSpec.getId());
-
-
-        Schedule schedule1 = new Schedule();
-        schedule1.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
-        schedule1.addToSchedule("Monday", LocalTime.of(13, 0), LocalTime.of(16, 0));
-        schedule1.addToSchedule("Friday", LocalTime.of(17, 0), LocalTime.of(18, 0));
-
-        Schedule schedule2 = new Schedule();
-        schedule2.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(20, 0));
-
-
-        Doctor doctor1 = new Doctor("Ana", "Anghel", "608653345678", "ana@gmail.com", "078656789", LocalDate.parse("1976-01-07"),
-                LocalDate.parse("2010-11-07"),  retSpec, schedule1);
-
-        //serviceDataBase.insertDoctorDb(doctor1);
-
-        Doctor doctorDb = serviceDataBase.getDoctorByIdDb(1);
-        System.out.println(doctorDb);
-        System.out.println(doctorDb.getId());
-
-        doctorDb.getSchedule().printSchedule();
-
-
-
-        Appointment appointment = new Appointment(doctorDb, patient, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0), medS1);
-        Appointment app = serviceDataBase.getAppointmentDb(1);
-        System.out.println(app);
-        serviceDataBase.updateAppointmentDiagnosticBd(app.getId(),  1);
-        app.setAppointmentDate(LocalDate.parse("2024-10-10"));
-
-        serviceDataBase.rescheduleAppointmentDb(app);
-*/
-
-        /*System.out.println(serviceDataBase.getMedicalRecordUsingId(4));
-
-        MedicalRecord medRec = serviceDataBase.getMedicalRecordUsingId(4);
-
-        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
-                "0734567898", LocalDate.parse("1965-11-09"), medRec, HealthInsurance.PUBLIC);
-        Patient patient2 = new MemberPatient("Andrei", "Popescu", "508345678986", "andpo@gmail.com",
-                "0734567898", LocalDate.parse("2000-11-09"), medRec, "10", Membership.GOLD);
-
-        //serviceDataBase.insertPatientDB(patient2);
-
-
-        Patient newPatient = serviceDataBase.getPatientByIdDB(1);
-        System.out.println(newPatient.getId());
-        System.out.println(newPatient);
-
-        //serviceDataBase.deletePatientById(3);
-
-        MedicalServices medicalService1 = new MedicalServices("ultrasound", 100, 35);
-
-        MedicalServices medicalService2 = new MedicalServices("endocrinology consult", 400, 30);
-        //serviceDataBase.insertMedicalService(medicalService2);
-
-        MedicalServices med = serviceDataBase.getMedicalServiceByIdDB(3);
-        System.out.println(med);
-        System.out.println(med.getId());
-
-        Specialty specialty2 = new Specialty("Cardiology", 75000);
-        //serviceDataBase.insertSpecialtyDB(specialty2);
-
-        Specialty newSpecialty = serviceDataBase.getSpecialtyByIdDB(2);
-        System.out.println(newSpecialty);
-        System.out.println("aici "+newSpecialty.getId());
-
-        //serviceDataBase.insertSpecialtyMedicalServiceDB(newSpecialty.getId(), 1);
-        List<MedicalServices> m = serviceDataBase.getMedicalServicesForSpecialtyById(newSpecialty.getId());
-        newSpecialty.setMedicalServices(m.toArray(new MedicalServices[m.size()]));
-        System.out.println(newSpecialty);
-
-        Specialty newSpecialty2 = serviceDataBase.getSpecialtyByIdDB(1);
-
-
-        Schedule schedule1 = new Schedule();
-        schedule1.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
-        schedule1.addToSchedule("Monday", LocalTime.of(13, 0), LocalTime.of(16, 0));
-        schedule1.addToSchedule("Friday", LocalTime.of(17, 0), LocalTime.of(18, 0));
-
-        Schedule schedule2 = new Schedule();
-        schedule2.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(20, 0));
-
-
-
-
-        Doctor doctor1 = new Doctor("Ana", "Anghel", "608653345678", "ana@gmail.com", "078656789", LocalDate.parse("1976-01-07"),
-                LocalDate.parse("2010-11-07"),  newSpecialty2, schedule1);
-        Doctor doctor2 = new Doctor("Ava", "Ina", "608657845678", "avaaaa@gmail.com", "078600089", LocalDate.parse("1985-01-07"),
-                LocalDate.parse("2018-01-08"),  newSpecialty, schedule1);
-
-        //serviceDataBase.insertDoctorDb(doctor1);
-        //serviceDataBase.insertDoctorDb(doctor2);
-
-        Doctor doc = serviceDataBase.getDoctorByIdDb(1);
-        System.out.println(doc);
-        service.viewSchedule(doc);
-
-
-        PhysiotherapyTreatment phy1 = new PhysiotherapyTreatment("extension lunge", 10, "back pain");
-        MedicationTreatment medTreat1= new MedicationTreatment("exuthyrox", 20, 60);
-        //serviceDataBase.insertPhysiotherapyTreatmentDb(phy1);
-        //serviceDataBase.insertMedicationTreatmentDb(medTreat1);
-
-        PhysiotherapyTreatment phy = serviceDataBase.getPhysiotherapyTreatmentDb(1);
-        MedicationTreatment medTreat= serviceDataBase.getMedicationTreatmentDb(1);
-        System.out.println(phy);
-        System.out.println(medTreat);
-        System.out.println(medTreat.getId());
-        System.out.println(phy.getId());
-
-        List<Treatment> treatment1 = new ArrayList<Treatment>();
-        treatment1.add(medTreat);
-        treatment1.add(phy);
-
-        Diagnostic diagnostic = new Diagnostic("osteoporosis", treatment1);
-        //serviceDataBase.insertDiagnosticDb(diagnostic);
-
-        Diagnostic diagDb = serviceDataBase.getDiagnosticDb(1);
-        System.out.println(diagDb);
-        System.out.println(diagDb.getId());
-
-
-        Appointment appointment = new Appointment(doc, newPatient, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0),med);
-       // serviceDataBase.insertAppointmentDb(appointment);
-
-        Appointment appointment2 = new Appointment(doc, newPatient, LocalDate.parse("2024-04-08"), LocalTime.of(9, 25), med, diagDb);
-        //serviceDataBase.insertAppointmentDb(appointment2);
-
-        Appointment app1 = serviceDataBase.getAppointmentDb(2);
-        Appointment app2 = serviceDataBase.getAppointmentDb(4);
-
-        System.out.println(app1);
-        System.out.println(app2);
-        System.out.println(app1.getId());
-        System.out.println(app2.getId());
-
-       // serviceDataBase.deleteAppointmentById(app1.getId());
-
-
-
-
-    */
-
-        /*
-        String[] endocrinologyConditions = {"thyroid problems", "infertility", "bone disorders"};
-
-
-        MedicalServices medicalServices1 = new MedicalServices("ultrasound", 100, 35);
-
-
-        MedicalServices[] medicalServices = {medicalServices1, medicalServices2};
-
-        Schedule schedule1 = new Schedule();
-        schedule1.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(11, 0));
-        schedule1.addToSchedule("Monday", LocalTime.of(13, 0), LocalTime.of(16, 0));
-        schedule1.addToSchedule("Friday", LocalTime.of(17, 0), LocalTime.of(18, 0));
-
-        Schedule schedule2 = new Schedule();
-        schedule2.addToSchedule("Monday", LocalTime.of(9, 0), LocalTime.of(20, 0));
-
-        Specialty specialty = new Specialty("Endocrinology", endocrinologyConditions, 70000, medicalServices);
-
-
-        Doctor doctor1 = new Doctor("Ana", "Anghel", "608653345678", "ana@gmail.com", "078656789", LocalDate.parse("1976-01-07"),
-                LocalDate.parse("2010-11-07"), "strada Soarelui nr. 9", specialty, schedule1);
-        Doctor doctor2 = new Doctor("Ava", "Ina", "608657845678", "avaaaa@gmail.com", "078600089", LocalDate.parse("1985-01-07"),
-                LocalDate.parse("2018-01-08"), "strada Soarelui nr. 9", specialty, schedule1);
-
-        String[] allergies1 = {"Pollen", "Almonds", "Penicillin"};
-        List<String> allergies2 = Arrays.asList(allergies1);
-        String[] chronicConditions1 = {"Thyroid disease", "Migraines"};
-        List<String> chronicConditions = Arrays.asList(chronicConditions1);
-        String[] physicalRestri = {"knee", "back issues"};
-        List<String> physicalRestrictions = Arrays.asList(physicalRestri);
-
-        MedicalRecord patientRecord1 = new MedicalRecord(allergies2, chronicConditions, physicalRestrictions);
-        Patient patient1 = new AdultPatient("Mirela", "Soare", "608345678986", "mireLALALA@gmail.com",
-                "0734567898", LocalDate.parse("1965-11-09"), patientRecord1, HealthInsurance.PUBLIC);
-        Patient patient2 = new MemberPatient("Andrei", "Popescu", "508345678986", "andpo@gmail.com",
-                "0734567898", LocalDate.parse("2000-11-09"), patientRecord1, "10", Membership.GOLD);
-
-
-        Appointment appointment = new Appointment(doctor1, patient1, LocalDate.parse("2025-03-03"), LocalTime.of(9, 0), medicalServices1);
-        Appointment appointment2 = new Appointment(doctor1, patient1, LocalDate.parse("2024-04-08"), LocalTime.of(9, 25), medicalServices2);
-        Appointment appointment3 = new Appointment(doctor1, patient1, LocalDate.parse("2024-04-08"), LocalTime.of(21, 30), medicalServices2);
-
-        Service service = Service.getInstance();
-
-        service.addDoctor(doctor1);
-        service.addDoctor(doctor2);
-        service.addPatient(patient1);
-        service.addPatient(patient2);
-        service.addAppointment(appointment);
-        service.addAppointment(appointment2);
-        service.addAppointment(appointment3);
-
-
-
-
-
 
         Scanner s = new Scanner(System.in);
         String input;
@@ -347,8 +79,9 @@ public class Main {
 
                             Appointment app = new Appointment(doctor, patient, appointmentDate, LocalTime.of(appointmentHour, appointmentMinute), medicalService);
 
+
                             service.addAppointment(app);
-                            service.viewAppointments(doctor);
+                            //service.viewAppointments(doctor);
 
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid number entered for hour or minute.");
@@ -456,7 +189,7 @@ public class Main {
             }
         }
 
-        s.close();*/
+        s.close();
    }
 
 }

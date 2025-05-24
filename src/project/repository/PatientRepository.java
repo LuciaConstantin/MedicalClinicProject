@@ -4,9 +4,7 @@ import project.models.*;
 
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class PatientRepository {
     private static PatientRepository instance;
@@ -268,6 +266,26 @@ public class PatientRepository {
         }
     }
 
+    public Optional<Set<Patient>> getAllData(Connection connection) {
+        Set<Patient> patients = new HashSet<>();
+        String sql = """
+                SELECT id
+                FROM patients
+                """;
 
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (ResultSet result = ps.executeQuery()) {
+                while (result.next()) {
+                    long id = result.getLong(1);
+                    Optional<Patient> pat = getPatientById(connection, id);
+                    pat.ifPresent(patients::add);
+                }
+                return patients.isEmpty() ? Optional.empty() : Optional.of(patients);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }

@@ -7,7 +7,10 @@ import project.repository.PatientRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import project.exceptions.*;
 
 public class PatientService extends ClinicDAO<Patient> {
@@ -36,6 +39,11 @@ public class PatientService extends ClinicDAO<Patient> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Set<Patient> getAll(){
+        Optional<Set<Patient>> client = patientRepository.getAllData(ConnectionProvider.getConnection());
+        return client.orElseThrow(PatientException::new);
     }
 
 

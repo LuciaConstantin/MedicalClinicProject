@@ -1,11 +1,17 @@
 package project.models;
 
+import project.ClinicDAO;
+import project.service.AppointmnetService;
+import project.service.DoctorService;
+import project.service.PatientService;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 
 public class Service {
     private static Service controller = null;
+
     private List<Appointment> appointments;
     private Set<Doctor> doctors;
     private Set<Patient> patients;
@@ -14,6 +20,9 @@ public class Service {
         this.appointments = new ArrayList<>();
         this.doctors = new HashSet<>();
         this.patients = new HashSet<>();
+        loadDataFromDatabase();
+        System.out.println("Doctors loaded: " + doctors.size());
+        System.out.println("Patients loaded: " + patients.size());
     }
 
     public static synchronized Service getInstance() {
@@ -22,9 +31,19 @@ public class Service {
         return controller;
     }
 
+    private void loadDataFromDatabase() {
+        PatientService patServ = new PatientService();
+        DoctorService docServ = new DoctorService();
+        AppointmnetService appointmnetServ = new AppointmnetService();
+
+        this.appointments = appointmnetServ.getAll();
+        this.doctors = docServ.getAll();
+        this.patients = patServ.getAll();
+
+    }
+
     public Appointment findAppointment(int appointmentId) {
         return appointments.stream().filter(appointment -> appointment.getId() == appointmentId).findFirst().orElse(null);
-
     }
 
 
@@ -42,6 +61,10 @@ public class Service {
 
             if (!patients.contains(appointment.getPatient())) {
                 throw new AppointmentException("Patient doesn't exist");
+            }
+
+            if(appointment.getDoctor().getSchedule() == null){
+                System.out.println("E nulllllll");
             }
 
             int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
@@ -78,7 +101,10 @@ public class Service {
                 }
             }
 
+            ClinicDAO<Appointment> app = new AppointmnetService();
             appointments.add(appointment);
+            app.create(appointment);
+
             System.out.println("Appointment successfully added!");
 
         } catch (AppointmentException e) {
@@ -90,10 +116,15 @@ public class Service {
 
     public void addDiagnostic(Appointment appointment) {
         Scanner scanner = new Scanner(System.in);
+        if(appointment.getDiagnostic() != null){
+            System.out.println("The appointment already has a diagnostic");
+            return;
+        }
         System.out.println("Add a diagnostic to appointment");
         System.out.println("Please enter the name of the diagnostic to be added: ");
         String name = scanner.nextLine();
-
+        System.out.println("Please add the doctor notes: ");
+        String doctorNotes = scanner.nextLine();
 
         List<Treatment> treatmentList = new ArrayList<>();
 
@@ -155,8 +186,11 @@ public class Service {
 
         }
 
-        Diagnostic diagnostic = new Diagnostic(name, treatmentList);
+        Diagnostic diagnostic = new Diagnostic(name, doctorNotes, treatmentList);
         appointment.setDiagnostic(diagnostic);
+        AppointmnetService app = new AppointmnetService();
+        app.update(appointment.getId(), diagnostic);
+
         System.out.println("Diagnostic added to appointment");
     }
 
@@ -200,7 +234,7 @@ public class Service {
 
     public Doctor findDoctor(String doctorName) {
         for (Doctor d : doctors) {
-            if ((d.getFirstName() + " " + d.getLastName()).equals(doctorName)) {
+            if ((d.getFirstName() + " " + d.getLastName()).equalsIgnoreCase(doctorName)) {
                 return d;
             }
         }
@@ -210,7 +244,7 @@ public class Service {
 
     public Patient findPatient(String patientName) {
         for (Patient p : patients) {
-            if ((p.getFirstName() + " " + p.getLastName()).equals(patientName)) {
+            if ((p.getFirstName() + " " + p.getLastName()).equalsIgnoreCase(patientName)) {
                 return p;
             }
         }

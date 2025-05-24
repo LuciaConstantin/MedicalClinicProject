@@ -1,14 +1,13 @@
 package project.repository;
 
-import project.models.Doctor;
-import project.models.Schedule;
-import project.models.Specialty;
-import project.models.TimeInterval;
+import project.models.*;
 
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class DoctorRepository {
     private static DoctorRepository instance;
@@ -90,12 +89,12 @@ public class DoctorRepository {
 
     public Optional<Doctor> getDoctorById(Connection connection, long id) {
         String sql = """
-                SELECT d.id, d.first_name, d.last_name, d.personal_ID, d.email, d.phone,
-                d.birth_date, d.hire_date, d.salary,  sh.day, sh.start_time, sh.end_time,
-                sy.id, sy.specialty_name, sy.starting_salary
-                FROM schedule sh JOIN  doctor d ON d.id = sh.doctor_id 
-                JOIN specialty sy ON d.specialty_id = sy.id
-                WHERE d.id = ?
+                    SELECT d.id, d.first_name, d.last_name, d.personal_ID, d.email, d.phone,
+                           d.birth_date, d.hire_date, d.salary, sh.day, sh.start_time, sh.end_time,
+                           d.specialty_id
+                    FROM schedule sh 
+                    JOIN doctor d ON d.id = sh.doctor_id
+                    WHERE d.id = ?
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -107,11 +106,10 @@ public class DoctorRepository {
 
                 while (rs.next()) {
                     if (!found) {
-                        Specialty specialty = new Specialty(
-                                rs.getLong("id"),
-                                rs.getString("specialty_name"),
-                                rs.getDouble("starting_salary")
-                        );
+                        SpecialtyRepository specialtyRepository = SpecialtyRepository.getInstance();
+                        long specialtyId = rs.getLong("specialty_id");
+                        Optional<Specialty> optionalSpecialty = specialtyRepository.getSpecialtyById(connection, specialtyId);
+                        Specialty specialty = optionalSpecialty.get();
 
                         doctor = new Doctor(
                                 rs.getString("first_name"),
@@ -127,6 +125,7 @@ public class DoctorRepository {
                         doctor.setId(rs.getLong("id"));
                         doctor.setSalary(rs.getDouble("salary"));
                         schedule.setId(rs.getLong("id"));
+
                         found = true;
                     }
 
@@ -148,4 +147,25 @@ public class DoctorRepository {
         }
     }
 
+    public Optional<Set<Doctor>> getAllData(Connection connection) {
+        Set<Doctor> doctors = new HashSet<>();
+        String sql = """
+                SELECT id
+                FROM doctor
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (ResultSet result = ps.executeQuery()) {
+                while (result.next()) {
+                    long id = result.getLong(1);
+                    Optional<Doctor> doc = getDoctorById(connection, id);
+                    doc.ifPresent(doctors::add);
+                }
+                return doctors.isEmpty() ? Optional.empty() : Optional.of(doctors);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }

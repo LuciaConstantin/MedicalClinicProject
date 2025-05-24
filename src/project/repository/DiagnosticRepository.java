@@ -4,8 +4,6 @@ import project.models.Diagnostic;
 import project.models.MedicationTreatment;
 import project.models.PhysiotherapyTreatment;
 import project.models.Treatment;
-import project.repository.DiagnosticRepository;
-import project.repository.PhysiotherapyTreatmentRepository;
 
 
 import java.sql.*;
@@ -26,16 +24,16 @@ public class DiagnosticRepository {
         return instance;
     }
 
-    public void insertDiagnostic(Connection connection, Diagnostic diagnostic) {
+    public Diagnostic insertDiagnostic(Connection connection, Diagnostic diagnostic) {
 
         String sql = """
-                INSERT INTO diagnostic (diagnostic_name)
-                VALUES (?)
+                INSERT INTO diagnostic (diagnostic_name, doctor_notes)
+                VALUES (?, ?)
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, diagnostic.getName());
-
+            ps.setString(2, diagnostic.getDoctorNotes());
 
             int insertedRows = ps.executeUpdate();
 
@@ -70,7 +68,7 @@ public class DiagnosticRepository {
                 }
                 ps.setString(3, t.treatmentType());
                 int insertedRows = ps.executeUpdate();
-                ;
+
                 System.out.println("Inserted " + insertedRows + " rows in diagnostic_treatment");
 
             } catch (SQLException e) {
@@ -79,6 +77,7 @@ public class DiagnosticRepository {
 
         }
 
+        return diagnostic;
     }
 
     public Optional<Diagnostic> getDiagnosticById(Connection connection, long id) {
@@ -92,6 +91,7 @@ public class DiagnosticRepository {
                 if (!result.next()) return Optional.empty();
 
                 String diagnosticName = result.getString("diagnostic_name");
+                String doctorNotes = result.getString("doctor_notes");
                 List<Treatment> treatments = new ArrayList<>();
 
                 try (PreparedStatement ps2 = connection.prepareStatement(sqlTreatments)) {
@@ -118,7 +118,7 @@ public class DiagnosticRepository {
                         }
                     }
                 }
-                return Optional.of(new Diagnostic(id, diagnosticName, treatments));
+                return Optional.of(new Diagnostic(id, diagnosticName,doctorNotes, treatments));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

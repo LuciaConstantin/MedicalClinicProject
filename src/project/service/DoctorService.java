@@ -3,12 +3,14 @@ package project.service;
 import project.ClinicDAO;
 import project.config.ConnectionProvider;
 import project.models.Doctor;
+import project.models.Patient;
 import project.repository.DoctorRepository;
 import project.exceptions.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.Set;
 
 public class DoctorService extends ClinicDAO<Doctor> {
     private final DoctorRepository doctorRepository = DoctorRepository.getInstance();
@@ -27,6 +29,11 @@ public class DoctorService extends ClinicDAO<Doctor> {
     @Override
     public Doctor getById(long id) {
         Optional<Doctor> client = doctorRepository.getDoctorById(ConnectionProvider.getConnection(), id);
+        return client.orElseThrow(DoctorException::new);
+    }
+
+    public Set<Doctor> getAll(){
+        Optional<Set<Doctor>> client = doctorRepository.getAllData(ConnectionProvider.getConnection());
         return client.orElseThrow(DoctorException::new);
     }
 

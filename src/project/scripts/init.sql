@@ -82,7 +82,8 @@ CREATE TABLE physiotherapy_treatment(
 
 CREATE TABLE diagnostic(
     id BIGSERIAL PRIMARY KEY,
-    diagnostic_name varchar(100)
+    diagnostic_name varchar(100),
+    doctor_notes varchar(300)
 );
 
 CREATE TABLE diagnostic_treatment(

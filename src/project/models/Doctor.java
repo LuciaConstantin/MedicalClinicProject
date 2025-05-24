@@ -3,6 +3,7 @@ package project.models;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Doctor extends Person implements Scheduler {
@@ -125,4 +126,18 @@ public class Doctor extends Person implements Scheduler {
                ", dateOfBirth=" + dateOfBirth +
                '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Doctor doctor = (Doctor) o;
+        return id == doctor.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
 }

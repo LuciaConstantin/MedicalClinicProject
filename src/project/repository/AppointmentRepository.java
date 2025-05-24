@@ -3,9 +3,10 @@ package project.repository;
 import project.models.*;
 
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Optional;
+import java.util.*;
 
 public class AppointmentRepository {
     private static AppointmentRepository instance;
@@ -148,15 +149,18 @@ public class AppointmentRepository {
         }
     }
 
-    public void updateAppointmentDiagnostic(Connection connection, long appointmentId, long diagnosticId) {
+    public void updateAppointmentDiagnostic(Connection connection, long appointmentId, Diagnostic diagnostic) {
         String sql = """
                 UPDATE appointment 
                 SET diagnostic_id = ?
                 WHERE id = ?
                 """;
 
+        DiagnosticRepository diagRepo = DiagnosticRepository.getInstance();
+        diagRepo.insertDiagnostic(connection, diagnostic);
+
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setLong(1, diagnosticId);
+            ps.setLong(1, diagnostic.getId());
             ps.setLong(2, appointmentId);
 
 
@@ -211,5 +215,26 @@ public class AppointmentRepository {
         }
     }
 
+    public Optional<List<Appointment>> getAllData(Connection connection) {
+        List<Appointment> appointments = new ArrayList<>();
+        String sql = """
+                SELECT id
+                FROM appointment
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            try (ResultSet result = ps.executeQuery()) {
+                while (result.next()) {
+                    long id = result.getLong(1);
+                    Optional<Appointment> app = getAppointmentById(connection, id);
+                    app.ifPresent(appointments::add);
+                }
+                return appointments.isEmpty() ? Optional.empty() : Optional.of(appointments);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }
