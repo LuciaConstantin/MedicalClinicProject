@@ -456,6 +456,9 @@ public class Service {
             doctorService.updateSalary(topDoctor);
 
         }
+        else{
+            System.out.println("There were no appointments found for last year");
+        }
     }
 
 
@@ -534,8 +537,6 @@ public class Service {
             System.out.println("The appointment already happened, it can't be deleted.");
         }
     }
-
-
 
 }
 

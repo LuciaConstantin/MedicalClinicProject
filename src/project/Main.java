@@ -12,7 +12,9 @@ public class Main {
 
     public static void main(String[] args) {
         Service service = Service.getInstance();
+        ServiceCSV servCSV = ServiceCSV.getInstance();
 
+        servCSV.writeCSV("Buna seara");
         Scanner s = new Scanner(System.in);
         String input;
 
@@ -84,6 +86,7 @@ public class Main {
 
                             service.addAppointment(app);
                             //service.viewAppointments(doctor);
+                            servCSV.writeCSV("Add appointment");
 
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid number entered for hour or minute.");
@@ -105,6 +108,7 @@ public class Main {
                             break;
                         }
                         service.viewAppointments(doc);
+                        servCSV.writeCSV("View appointments for a specific doctor");
                         break;
 
                     case 3:
@@ -116,18 +120,21 @@ public class Main {
                             break;
                         }
                         service.addDiagnostic(ap);
+                        servCSV.writeCSV("Add diagnostic and treatments for an appointment");
                         break;
 
                     case 4:
                         System.out.println("Enter specialty name: ");
                         String specialtyName = s.nextLine();
                         service.doctorsSpecialty(specialtyName);
+                        servCSV.writeCSV("View all the doctors that have a specific specialty");
                         break;
 
                     case 5:
                         System.out.println("Enter specialty name: ");
                         String spec = s.nextLine();
                         service.specialtyMedicalServices(spec);
+                        servCSV.writeCSV("View all the medical services for a specific specialty");
                         break;
 
                     case 6:
@@ -136,6 +143,7 @@ public class Main {
                         System.out.println("Last Name: ");
                         String lastName = s.nextLine();
                         service.allPatientAppointments(firstName, lastName);
+                        servCSV.writeCSV("View all the appointments of a patient, diagnostic and treatments");
                         break;
 
                     case 7:
@@ -152,9 +160,11 @@ public class Main {
                         System.out.println("New appointment minute: ");
                         int appointmentMinute = Integer.parseInt(s.nextLine());
                         service.appointmentReschedule(patientName, docName, LocalDate.parse(appointmentDate), LocalDate.parse(appointmentDateNew), LocalTime.of(appointmentHour, appointmentMinute));
+                        servCSV.writeCSV("Appointment reschedule");
                         break;
                     case 8:
                         service.profitDoctor();
+                        servCSV.writeCSV("Increase the salary of the doctor who generated the highest profit last year.");
                         break;
                     case 9:
                         System.out.println("Enter doctor name: First Name + Last Name");
@@ -165,6 +175,7 @@ public class Main {
                             break;
                         }
                         service.viewSchedule(doctor);
+                        servCSV.writeCSV("View the schedule for a specific doctor");
                         break;
                     case 10:
                         try {
@@ -175,6 +186,7 @@ public class Main {
                             System.out.println("End date: ");
                             String endDate = s.nextLine();
                             service.planAppointment(specialtyName, LocalDate.parse(startDate), LocalDate.parse(endDate));
+                            servCSV.writeCSV("Plan an appointment");
                         } catch (DateTimeException e) {
                             System.out.println("Invalid date or time format.");
                         }
@@ -184,12 +196,14 @@ public class Main {
                         break;
                     case 11:
                         service.patientMoney();
+                        servCSV.writeCSV("Sum of all payments made by patients this year");
                         break;
                     case 12:
                         System.out.println("Please enter the appointment id to be deleted: ");
                         long id = Long.parseLong(s.nextLine());
                         Appointment app = service.findAppointment(id);
                         service.deleteAppointment(app);
+                        servCSV.writeCSV("Delete a future appointment");
                         break;
 
                     default:
