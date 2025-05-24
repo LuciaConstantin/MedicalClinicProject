@@ -2,6 +2,7 @@ package project.repository;
 
 import project.models.*;
 
+import javax.print.Doc;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -168,4 +169,24 @@ public class DoctorRepository {
         }
 
     }
+
+    public void updateSalary(Connection connection, Doctor doctor) {
+        String sql = """
+                UPDATE doctor 
+                SET salary = ?
+                WHERE id = ?
+                """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setDouble(1, doctor.getSalary());
+            ps.setLong(2, doctor.getId());
+
+            int insertedRows = ps.executeUpdate();
+            System.out.println("Updated " + insertedRows + " rows in doctor");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

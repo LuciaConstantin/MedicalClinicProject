@@ -2,10 +2,7 @@ package project.repository;
 
 import project.models.PhysiotherapyTreatment;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Optional;
 
 public class PhysiotherapyTreatmentRepository {
@@ -28,13 +25,20 @@ public class PhysiotherapyTreatmentRepository {
                 VALUES (?, ?, ?)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, phy.getExerciseName());
             ps.setInt(2, phy.getRepetitions());
             ps.setString(3, phy.getMedicalIssues());
 
             int insertedRows = ps.executeUpdate();
-            ;
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    long generatedId = rs.getLong(1);
+                    phy.setId(generatedId);
+                }
+            }
+
             System.out.println("Inserted " + insertedRows + " rows in physiotherapy_treatment");
 
         } catch (SQLException e) {

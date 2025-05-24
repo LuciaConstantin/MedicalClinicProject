@@ -60,10 +60,15 @@ public class DiagnosticRepository {
             try (PreparedStatement ps = connection.prepareStatement(sql2)) {
                 ps.setLong(1, diagnostic.getId());
                 if (t.treatmentType().equals("Medication treatment")) {
+                    MedicationRepository medR = MedicationRepository.getInstance();
                     MedicationTreatment med = (MedicationTreatment) t;
+                    medR.insertMedicationTreatment(connection, med);
+
                     ps.setLong(2, med.getId());
                 } else {
+                    PhysiotherapyTreatmentRepository medR = PhysiotherapyTreatmentRepository.getInstance();
                     PhysiotherapyTreatment phy = (PhysiotherapyTreatment) t;
+                    medR.insertPhysiotherapyTreatment(connection, phy);
                     ps.setLong(2, phy.getId());
                 }
                 ps.setString(3, t.treatmentType());

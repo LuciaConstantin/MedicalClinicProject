@@ -42,7 +42,7 @@ public class Service {
 
     }
 
-    public Appointment findAppointment(int appointmentId) {
+    public Appointment findAppointment(long appointmentId) {
         return appointments.stream().filter(appointment -> appointment.getId() == appointmentId).findFirst().orElse(null);
     }
 
@@ -204,7 +204,7 @@ public class Service {
 
         StringBuilder sb = new StringBuilder();
         for (Patient patient : patients) {
-            if (patient.getFirstName().equals(firstName) && patient.getLastName().equals(lastName)) {
+            if (patient.getFirstName().equalsIgnoreCase(firstName) && patient.getLastName().equalsIgnoreCase(lastName)) {
                 for (Appointment appointment : appointments) {
                     if (appointment.getPatient().equals(patient)) {
                         sb.append("\nAppointment date: " + appointment.getAppointmentDate()
@@ -214,7 +214,7 @@ public class Service {
                                 : "\n"));
                         if (appointment.getDiagnostic() != null) {
                             for (Treatment treatment : appointment.getDiagnostic().getTreatments()) {
-                                sb.append("Treatment type: " + treatment.treatmentType() + "\n Treatment description: \n " + treatment.treatmentDescription());
+                                sb.append("\n Treatment type: " + treatment.treatmentType() + "\n Treatment description: \n " + treatment.treatmentDescription() + "\n");
                             }
                         } else {
                             sb.append("No diagnostic added for this appointment.\n");
@@ -292,7 +292,7 @@ public class Service {
 
         System.out.println("Doctors for the " + specialty + " specialty: ");
         for (Doctor doctor : doctors) {
-            if (doctor.getSpecialty().getSpecialtyName().equals(specialty)) {
+            if (doctor.getSpecialty().getSpecialtyName().equalsIgnoreCase(specialty)) {
                 sb.append("Doctor: " + doctor.getFirstName() + " " + doctor.getLastName() + "\n");
             }
         }
@@ -344,7 +344,6 @@ public class Service {
     public void appointmentReschedule(String patientName, String doctorName, LocalDate appointmentDate, LocalDate rescheduleDate, LocalTime rescheduleTime) {
 
         boolean appointmentFound = false;
-        int appointmentIndex = -1;
         Appointment appointment = null;
 
 
@@ -362,7 +361,6 @@ public class Service {
                     (app.getPatient().getFirstName() + " " + app.getPatient().getLastName()).equals(patientName)) {
 
                 appointment = app;
-                appointmentIndex = appointments.indexOf(app);
                 appointmentFound = true;
                 break;
             }
@@ -410,8 +408,13 @@ public class Service {
 
         TimeInterval reschTime = new TimeInterval(rescheduleTime, appointmentEnd);
 
-        appointments.get(appointmentIndex).setAppointmentDate(rescheduleDate);
-        appointments.get(appointmentIndex).setAppointmentInterval(reschTime);
+
+        appointment.setAppointmentDate(rescheduleDate);
+        appointment.setAppointmentInterval(reschTime);
+        AppointmnetService appointmnetService = new AppointmnetService();
+
+        appointmnetService.reschedule(appointment);
+
         System.out.println("Appointment successfully rescheduled to: " + rescheduleDate + " at " + rescheduleTime);
 
     }
@@ -448,8 +451,13 @@ public class Service {
             topDoctor.setSalary(topDoctor.getSalary() * 1.1);
             System.out.println("Doctor " + topDoctor.getFirstName() + " " + topDoctor.getLastName() +
                     " had the highest profit " + maxProfit + " and got a 10% raise. New salary: " + topDoctor.getSalary());
+
+            DoctorService doctorService = new DoctorService();
+            doctorService.updateSalary(topDoctor);
+
         }
     }
+
 
     public void viewSchedule(Doctor doctor) {
         System.out.println("\nThe schedule for doctor: " + doctor.getFirstName() + " " + doctor.getLastName());
@@ -515,6 +523,18 @@ public class Service {
         }
         System.out.println("Total money from patients this year is: " + totalMoney);
     }
+
+    public void deleteAppointment(Appointment appointment) {
+        if(appointment.getAppointmentDate().isAfter(LocalDate.now()) && appointment.getDiagnostic() == null) {
+            AppointmnetService appointmnetService = new AppointmnetService();
+            appointmnetService.delete(appointment.getId());
+            appointments.remove(appointment);
+        }
+        else{
+            System.out.println("The appointment already happened, it can't be deleted.");
+        }
+    }
+
 
 
 }

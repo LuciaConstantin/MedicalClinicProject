@@ -20,15 +20,17 @@ public class Main {
             System.out.println("Enter number or write 'exit' to quit");
             System.out.println("1. Add appointment");
             System.out.println("2. View appointments for a specific doctor");
-            System.out.println("3. Add diagnostic for an appointment");
+            System.out.println("3. Add diagnostic and treatments for an appointment");
             System.out.println("4. View all the doctors that have a specific specialty");
-            System.out.println("5. View all the medical treatments for a specific specialty");
-            System.out.println("6. View all the appointments of a patient");
+            System.out.println("5. View all the medical services for a specific specialty");
+            System.out.println("6. View all the appointments of a patient, diagnostic and treatments");
             System.out.println("7. Appointment reschedule");
             System.out.println("8. Increase the salary of the doctor who generated the highest profit last year.");
             System.out.println("9. View the schedule for a specific doctor");
             System.out.println("10. Plan an appointment");
             System.out.println("11. Sum of all payments made by patients this year.");
+            System.out.println("12. Delete a future appointment ");
+            System.out.println("13. Delete a patient");
 
             input = s.nextLine();
 
@@ -117,23 +119,25 @@ public class Main {
                         break;
 
                     case 4:
-                        System.out.println("Enter appointment specialty name: ");
+                        System.out.println("Enter specialty name: ");
                         String specialtyName = s.nextLine();
                         service.doctorsSpecialty(specialtyName);
                         break;
 
                     case 5:
-                        System.out.println("Enter appointment specialty name: ");
+                        System.out.println("Enter specialty name: ");
                         String spec = s.nextLine();
                         service.specialtyMedicalServices(spec);
                         break;
+
                     case 6:
-                        System.out.println("First Name");
+                        System.out.println("First Name: ");
                         String firstName = s.nextLine();
-                        System.out.println("Last Name");
+                        System.out.println("Last Name: ");
                         String lastName = s.nextLine();
                         service.allPatientAppointments(firstName, lastName);
                         break;
+
                     case 7:
                         System.out.println("Patient name: ");
                         String patientName = s.nextLine();
@@ -181,6 +185,13 @@ public class Main {
                     case 11:
                         service.patientMoney();
                         break;
+                    case 12:
+                        System.out.println("Please enter the appointment id to be deleted: ");
+                        long id = Long.parseLong(s.nextLine());
+                        Appointment app = service.findAppointment(id);
+                        service.deleteAppointment(app);
+                        break;
+
                     default:
                         System.out.println("Please Choose a Valid Number");
                 }

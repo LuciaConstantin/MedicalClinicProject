@@ -2,8 +2,9 @@ package project.service;
 
 import project.ClinicDAO;
 import project.config.ConnectionProvider;
+
 import project.models.Doctor;
-import project.models.Patient;
+
 import project.repository.DoctorRepository;
 import project.exceptions.*;
 
@@ -15,7 +16,8 @@ import java.util.Set;
 public class DoctorService extends ClinicDAO<Doctor> {
     private final DoctorRepository doctorRepository = DoctorRepository.getInstance();
 
-    public DoctorService() {}
+    public DoctorService() {
+    }
 
     @Override
     public void create(Doctor doctor) {
@@ -32,9 +34,17 @@ public class DoctorService extends ClinicDAO<Doctor> {
         return client.orElseThrow(DoctorException::new);
     }
 
-    public Set<Doctor> getAll(){
+    public Set<Doctor> getAll() {
         Optional<Set<Doctor>> client = doctorRepository.getAllData(ConnectionProvider.getConnection());
         return client.orElseThrow(DoctorException::new);
+    }
+
+    public void updateSalary(Doctor doctor) {
+        try (Connection connection = ConnectionProvider.getConnection()) {
+            doctorRepository.updateSalary(connection, doctor);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

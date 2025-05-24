@@ -2,10 +2,7 @@ package project.repository;
 
 import project.models.MedicationTreatment;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Optional;
 
 public class MedicationRepository {
@@ -28,13 +25,21 @@ public class MedicationRepository {
                 VALUES (?, ?, ?)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, medicationTreatment.getMedicationName());
             ps.setDouble(2, medicationTreatment.getDosage());
             ps.setInt(3, medicationTreatment.getTreatmentInterval());
 
             int insertedRows = ps.executeUpdate();
-            ;
+
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    long generatedId = rs.getLong(1);
+                    medicationTreatment.setId(generatedId);
+                }
+            }
+
             System.out.println("Inserted " + insertedRows + " rows in medication_treatment");
 
         } catch (SQLException e) {
@@ -66,7 +71,6 @@ public class MedicationRepository {
         }
         return Optional.empty();
     }
-
 
 
 }
