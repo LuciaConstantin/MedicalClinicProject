@@ -32,6 +32,7 @@ public class Doctor extends Person implements Scheduler {
 
     }
 
+
     public void addSchedule() {
         Scanner s = new Scanner(System.in);
         System.out.println("Enter a new work day program");

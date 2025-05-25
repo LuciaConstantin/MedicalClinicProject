@@ -199,47 +199,66 @@ public class PatientRepository {
                     if (optionalMedRec.isEmpty()) return Optional.empty();
                     MedicalRecord medicalRecord = optionalMedRec.get();
 
+
+                    String table = switch (patientType) {
+                        case "adult" -> "adult_patients";
+                        case "child" -> "child_patients";
+                        case "member" -> "member_patients";
+                        default -> throw new IllegalArgumentException("Unknown patient type");
+                    };
+
+                    String SQLPat = "SELECT * FROM " + table + " WHERE patient_id = ?";
+
+                    Object[] obj = new Object[3];
                     switch (patientType) {
                         case "child" -> {
-                            String childSql = "SELECT * FROM child_patients WHERE patient_id = ?";
-                            try (PreparedStatement childPs = connection.prepareStatement(childSql)) {
-                                childPs.setLong(1, id);
-                                try (ResultSet childRs = childPs.executeQuery()) {
-                                    if (childRs.next()) {
-                                        String guardianName = childRs.getString("guardian_name");
-                                        String guardianId = childRs.getString("guardian_id");
-                                        return Optional.of(new ChildPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, guardianName, guardianId));
+                            try (PreparedStatement p = connection.prepareStatement(SQLPat)) {
+                                p.setLong(1, id);
+                                try (ResultSet res = p.executeQuery()) {
+                                    if (res.next()) {
+                                        String guardianName = res.getString("guardian_name");
+                                        String guardianId = res.getString("guardian_id");
+
+                                        obj[0] = guardianName;
+                                        obj[1] = guardianId;
                                     }
                                 }
                             }
                         }
                         case "adult" -> {
-                            String adultSql = "SELECT * FROM adult_patients WHERE patient_id = ?";
-                            try (PreparedStatement adultPs = connection.prepareStatement(adultSql)) {
-                                adultPs.setLong(1, id);
-                                try (ResultSet adultRs = adultPs.executeQuery()) {
-                                    if (adultRs.next()) {
-                                        String insuranceStr = adultRs.getString("health_insurance");
+                            try (PreparedStatement p = connection.prepareStatement(SQLPat)) {
+                                p.setLong(1, id);
+                                try (ResultSet res = p.executeQuery()) {
+                                    if (res.next()) {
+                                        String insuranceStr = res.getString("health_insurance");
                                         HealthInsurance insurance = HealthInsurance.valueOf(insuranceStr);
-                                        return Optional.of(new AdultPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, insurance));
+                                        obj[0] = insurance;
                                     }
                                 }
                             }
                         }
                         case "member" -> {
-                            String memberSql = "SELECT * FROM member_patients WHERE patient_id = ?";
-                            try (PreparedStatement memberPs = connection.prepareStatement(memberSql)) {
-                                memberPs.setLong(1, id);
-                                try (ResultSet memberRs = memberPs.executeQuery()) {
-                                    if (memberRs.next()) {
-                                        String membershipNumber = memberRs.getString("membership_number");
-                                        Membership membership = Membership.valueOf(memberRs.getString("membership"));
-                                        return Optional.of(new MemberPatient(id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, membershipNumber, membership));
+                            try (PreparedStatement p = connection.prepareStatement(SQLPat)) {
+                                p.setLong(1, id);
+                                try (ResultSet res = p.executeQuery()) {
+                                    if (res.next()) {
+                                        String membershipNumber = res.getString("membership_number");
+                                        Membership membership = Membership.valueOf(res.getString("membership"));
+                                        obj[0] = membershipNumber;
+                                        obj[1] = membership;
                                     }
                                 }
                             }
                         }
+
+
                     }
+
+                    PatientFactory patientFactory = new PatientFactory();
+                    Patient pat = patientFactory.createPatient(patientType, id, firstName, lastName, personalID, email, phone, birthDate, medicalRecord, obj);
+                    return Optional.of(pat);
+
+
                 }
             }
         } catch (SQLException e) {

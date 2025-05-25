@@ -118,13 +118,21 @@ public class AppointmentRepository {
 
                             TimeInterval interval = new TimeInterval(startT, endT);
 
+                            Builder builder = new AppointmentBuilder();
+                            Director director = new Director(builder);
 
-                            Appointment appointment = new Appointment(id, doc, pat, date, startT, serv, diag);
-                            return Optional.of(appointment);
+                            Appointment app;
+                            if (diag != null) {
+                                app = director.createCompleteAppointment(id, doc, pat, date, startT, serv, diag);
+                            } else {
+                                app = director.createAppointmentWithoutDiagnostic(id, doc, pat,date, startT, serv);
+
+                            }
+
+                            return Optional.of(app);
                         }
                     }
                 }
-
                 return Optional.empty();
             }
         } catch (SQLException e) {
@@ -149,7 +157,7 @@ public class AppointmentRepository {
         }
     }
 
-    public void updateAppointmentDiagnostic(Connection connection, long appointmentId, Diagnostic diagnostic) {
+    public void updateAppointmentDiagnostic(Connection connection, Appointment appointment) {
         String sql = """
                 UPDATE appointment 
                 SET diagnostic_id = ?
@@ -157,12 +165,11 @@ public class AppointmentRepository {
                 """;
 
         DiagnosticRepository diagRepo = DiagnosticRepository.getInstance();
-        diagRepo.insertDiagnostic(connection, diagnostic);
+        diagRepo.insertDiagnostic(connection, appointment.getDiagnostic());
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setLong(1, diagnostic.getId());
-            ps.setLong(2, appointmentId);
-
+            ps.setLong(1, appointment.getDiagnostic().getId());
+            ps.setLong(2, appointment.getId());
 
             int insertedRows = ps.executeUpdate();
             System.out.println("Updated " + insertedRows + " rows in appointment");

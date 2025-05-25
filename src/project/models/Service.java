@@ -46,7 +46,6 @@ public class Service {
         return appointments.stream().filter(appointment -> appointment.getId() == appointmentId).findFirst().orElse(null);
     }
 
-
     public void addAppointment(Appointment appointment) {
         try {
             for (Appointment app : appointments) {
@@ -112,7 +111,6 @@ public class Service {
         }
 
     }
-
 
     public void addDiagnostic(Appointment appointment) {
         Scanner scanner = new Scanner(System.in);
@@ -189,7 +187,8 @@ public class Service {
         Diagnostic diagnostic = new Diagnostic(name, doctorNotes, treatmentList);
         appointment.setDiagnostic(diagnostic);
         AppointmnetService app = new AppointmnetService();
-        app.update(appointment.getId(), diagnostic);
+
+        app.update(appointment);
 
         System.out.println("Diagnostic added to appointment");
     }
@@ -231,7 +230,6 @@ public class Service {
         }
     }
 
-
     public Doctor findDoctor(String doctorName) {
         for (Doctor d : doctors) {
             if ((d.getFirstName() + " " + d.getLastName()).equalsIgnoreCase(doctorName)) {
@@ -261,7 +259,6 @@ public class Service {
         return null;
     }
 
-
     public void viewAppointments(Doctor doctor) {
         sortAppointments();
         StringBuilder sb = new StringBuilder();
@@ -280,7 +277,6 @@ public class Service {
             System.out.println("No appointments found");
         }
     }
-
 
     public void addDoctor(Doctor doctor) {
 
@@ -461,7 +457,6 @@ public class Service {
         }
     }
 
-
     public void viewSchedule(Doctor doctor) {
         System.out.println("\nThe schedule for doctor: " + doctor.getFirstName() + " " + doctor.getLastName());
         doctor.getSchedule().printSchedule();
@@ -537,6 +532,8 @@ public class Service {
             System.out.println("The appointment already happened, it can't be deleted.");
         }
     }
+
+
 
 }
 

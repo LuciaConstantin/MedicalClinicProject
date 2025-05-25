@@ -18,6 +18,7 @@ public class Main {
         Scanner s = new Scanner(System.in);
         String input;
 
+
         while (true) {
             System.out.println("Enter number or write 'exit' to quit");
             System.out.println("1. Add appointment");
@@ -81,8 +82,12 @@ public class Main {
                                 break;
                             }
 
-                            Appointment app = new Appointment(doctor, patient, appointmentDate, LocalTime.of(appointmentHour, appointmentMinute), medicalService);
+                           // Appointment app = new Appointment(doctor, patient, appointmentDate, LocalTime.of(appointmentHour, appointmentMinute), medicalService);
 
+                            Builder builder = new AppointmentBuilder();
+                            Director director = new Director(builder);
+
+                            Appointment app = director.createInitialAppointment(doctor, patient, appointmentDate, LocalTime.of(appointmentHour, appointmentMinute), medicalService);
 
                             service.addAppointment(app);
                             //service.viewAppointments(doctor);
@@ -143,7 +148,7 @@ public class Main {
                         System.out.println("Last Name: ");
                         String lastName = s.nextLine();
                         service.allPatientAppointments(firstName, lastName);
-                        servCSV.writeCSV("View all the appointments of a patient, diagnostic and treatments");
+                        servCSV.writeCSV("View all the appointments of a patient diagnostic and treatments");
                         break;
 
                     case 7:
@@ -215,6 +220,8 @@ public class Main {
         }
 
         s.close();
+
+
    }
 
 }

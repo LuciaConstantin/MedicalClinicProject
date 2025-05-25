@@ -45,9 +45,9 @@ public class AppointmnetService extends ClinicDAO<Appointment> {
     }
 
 
-    public void update(long appointmentId, Diagnostic diagnostic) {
+    public void update(Appointment appointment) {
         try (Connection connection = ConnectionProvider.getConnection()) {
-            appointmentRepository.updateAppointmentDiagnostic(connection, appointmentId, diagnostic);
+            appointmentRepository.updateAppointmentDiagnostic(connection, appointment);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

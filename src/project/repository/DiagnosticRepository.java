@@ -1,9 +1,6 @@
 package project.repository;
 
-import project.models.Diagnostic;
-import project.models.MedicationTreatment;
-import project.models.PhysiotherapyTreatment;
-import project.models.Treatment;
+import project.models.*;
 
 
 import java.sql.*;
