@@ -28,7 +28,9 @@ public class ChildPatient extends Patient{
     public void displayInformation() {
         System.out.println("Information about the child patient");
         System.out.println("Last name: " + this.lastName + ", first name: " + this.firstName +
-                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", guradian name: " + this.guardianName);
+                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", guradian name: " + this.guardianName +"\n");
+
+        getMedicalRecord().displayMedicalRecord();
     }
 
 

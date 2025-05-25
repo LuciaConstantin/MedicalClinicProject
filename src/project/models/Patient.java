@@ -28,7 +28,8 @@ public abstract class Patient extends Person {
     public void displayInformation() {
         System.out.println("Information about the patient");
         System.out.println("Last name: " + this.lastName + ", first name: " + this.firstName +
-                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone );
+                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + "\n");
+
     }
 
 

@@ -12,6 +12,7 @@ public class Appointment {
     private MedicalServices medicalService;
     private Diagnostic diagnostic;
 
+
     public Appointment() {}
 
     public Doctor getDoctor() {

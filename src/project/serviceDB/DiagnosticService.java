@@ -1,4 +1,4 @@
-package project.service;
+package project.serviceDB;
 
 import project.ClinicDAO;
 import project.config.ConnectionProvider;

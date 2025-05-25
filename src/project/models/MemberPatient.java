@@ -32,9 +32,10 @@ public class MemberPatient extends Patient{
 
     @Override
     public void displayInformation() {
-        System.out.println("Information about the child patient");
+        System.out.println("Information about the member patient");
         System.out.println("Last name: " + this.lastName + ", first name: " + this.firstName +
-                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", type of memebership" + this.membershipType);
+                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", type of memebership" + this.membershipType + "\n");
+        getMedicalRecord().displayMedicalRecord();
     }
 
     public String getPatientType() {

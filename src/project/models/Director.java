@@ -39,6 +39,7 @@ public class Director {
         builder.setStartTime(appointmentStart);
         builder.setMedicalServices(medicalService);
         builder.setDiagnostic(null);
+
         return builder.build();
     }
 }

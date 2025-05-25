@@ -1,4 +1,4 @@
-package project.service;
+package project.serviceDB;
 
 import project.ClinicDAO;
 import project.config.ConnectionProvider;
@@ -7,7 +7,6 @@ import project.repository.PatientRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 

@@ -1,19 +1,15 @@
-package project.service;
+package project.serviceDB;
 
 import project.ClinicDAO;
 import project.config.ConnectionProvider;
 import project.exceptions.AppointmentException;
-import project.exceptions.DoctorException;
 import project.models.Appointment;
-import project.models.Diagnostic;
-import project.models.Doctor;
 import project.repository.AppointmentRepository;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class AppointmnetService extends ClinicDAO<Appointment> {
     private final AppointmentRepository appointmentRepository = AppointmentRepository.getInstance();

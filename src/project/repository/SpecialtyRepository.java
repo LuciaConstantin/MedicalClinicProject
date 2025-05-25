@@ -142,5 +142,4 @@ public class SpecialtyRepository {
         return services.isEmpty() ? Optional.empty() : Optional.of(services);
     }
 
-
 }

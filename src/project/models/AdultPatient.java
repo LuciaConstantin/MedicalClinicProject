@@ -30,9 +30,11 @@ public class AdultPatient extends Patient {
 
     @Override
     public void displayInformation() {
-        System.out.println("Information about the child patient");
+        System.out.println("Information about the adult patient");
         System.out.println("Last name: " + this.lastName + ", first name: " + this.firstName +
-                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", type of health insurance: " + this.typeOfHealthInsurance.toString().toLowerCase());
+                ", email: " + this.email + ", age: " + this.getAge() + ", phone: " + this.phone + ", type of health insurance: " + this.typeOfHealthInsurance.toString().toLowerCase() + "\n");
+
+        getMedicalRecord().displayMedicalRecord();
     }
 
     public String getPatientType() {

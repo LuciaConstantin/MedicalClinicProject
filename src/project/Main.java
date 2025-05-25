@@ -1,7 +1,9 @@
 package project;
 
 import project.models.*;
-import project.service.DoctorService;
+import project.service.Service;
+import project.service.ServiceCSV;
+
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -14,26 +16,29 @@ public class Main {
         Service service = Service.getInstance();
         ServiceCSV servCSV = ServiceCSV.getInstance();
 
-        servCSV.writeCSV("Buna seara");
         Scanner s = new Scanner(System.in);
         String input;
 
+        StringBuilder sb = new StringBuilder();
 
         while (true) {
-            System.out.println("Enter number or write 'exit' to quit");
-            System.out.println("1. Add appointment");
-            System.out.println("2. View appointments for a specific doctor");
-            System.out.println("3. Add diagnostic and treatments for an appointment");
-            System.out.println("4. View all the doctors that have a specific specialty");
-            System.out.println("5. View all the medical services for a specific specialty");
-            System.out.println("6. View all the appointments of a patient, diagnostic and treatments");
-            System.out.println("7. Appointment reschedule");
-            System.out.println("8. Increase the salary of the doctor who generated the highest profit last year.");
-            System.out.println("9. View the schedule for a specific doctor");
-            System.out.println("10. Plan an appointment");
-            System.out.println("11. Sum of all payments made by patients this year.");
-            System.out.println("12. Delete a future appointment ");
-            System.out.println("13. Delete a patient");
+            sb.append("\nEnter number or write 'exit' to quit exit\n" +
+                    "1. Add appointment \n" +
+                    "2. View appointments for a specific doctor \n" +
+                    "3. Add diagnostic and treatments for an appointment\n" +
+                    "4. View all the doctors that have a specific specialty\n " +
+                    "5. View all the medical services for a specific specialty \n" +
+                    "6. View all the appointments of a patient, diagnostic and treatments\n" +
+                    "7. Appointment reschedule\n" +
+                    "8. Increase the salary of the doctor who generated the highest profit last year\n" +
+                    "9. View the schedule for a specific doctor\n" +
+                    "10. Plan an appointment\n" +
+                    "11. Sum of all payments made by patients this year\n" +
+                    "12. Delete a future appointment\n" +
+                    "13. Generate invoice for appointment\n" +
+                    "14. Add patient\n" +
+                    "15. View all patient data");
+            System.out.println(sb);
 
             input = s.nextLine();
 
@@ -82,7 +87,6 @@ public class Main {
                                 break;
                             }
 
-                           // Appointment app = new Appointment(doctor, patient, appointmentDate, LocalTime.of(appointmentHour, appointmentMinute), medicalService);
 
                             Builder builder = new AppointmentBuilder();
                             Director director = new Director(builder);
@@ -194,8 +198,7 @@ public class Main {
                             servCSV.writeCSV("Plan an appointment");
                         } catch (DateTimeException e) {
                             System.out.println("Invalid date or time format.");
-                        }
-                        finally {
+                        } finally {
                             System.out.println("Appointment scheduling attempt finished.\n");
                         }
                         break;
@@ -210,6 +213,25 @@ public class Main {
                         service.deleteAppointment(app);
                         servCSV.writeCSV("Delete a future appointment");
                         break;
+                    case 13:
+                        System.out.println("Enter appointment id: ");
+                        int appId = Integer.parseInt(s.nextLine());
+                        service.generateInvoice(appId);
+                        servCSV.writeCSV("Generate invoice for appointment");
+                        break;
+
+                    case 14:
+                        service.addPatient();
+                        servCSV.writeCSV("Add new patient");
+                        break;
+                    case 15:
+                        System.out.println("Enter patient first name: ");
+                        String fName = s.nextLine();
+                        System.out.println("Enter patient last name: ");
+                        String lName = s.nextLine();
+                        service.viewPatientData(fName, lName);
+                        servCSV.writeCSV("View all patient data");
+                        break;
 
                     default:
                         System.out.println("Please Choose a Valid Number");
@@ -221,8 +243,7 @@ public class Main {
 
         s.close();
 
-
-   }
+    }
 
 }
 

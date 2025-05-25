@@ -1,9 +1,10 @@
-package project.models;
+package project.service;
 
 import project.ClinicDAO;
-import project.service.AppointmnetService;
-import project.service.DoctorService;
-import project.service.PatientService;
+import project.models.*;
+import project.serviceDB.AppointmnetService;
+import project.serviceDB.DoctorService;
+import project.serviceDB.PatientService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -74,12 +75,7 @@ public class Service {
             }
 
             boolean goodInterval = false;
-            LocalTime appointmentStart = appointment.getAppointmentInterval().start();
-            LocalTime appointmentEnd = appointment.getAppointmentInterval().end();
-
             for (TimeInterval workInterval : doctorSchedule) {
-                LocalTime workStart = workInterval.start();
-                LocalTime workEnd = workInterval.end();
 
                 if (workInterval.contains(appointment.getAppointmentInterval())) {
                     goodInterval = true;
@@ -278,11 +274,6 @@ public class Service {
         }
     }
 
-    public void addDoctor(Doctor doctor) {
-
-        doctors.add(doctor);
-    }
-
     public void doctorsSpecialty(String specialty) {
         StringBuilder sb = new StringBuilder();
 
@@ -317,25 +308,6 @@ public class Service {
             System.out.println("Medical service name: " + spec.getMedicalServices()[i].getServiceName() + ", price: " + spec.getMedicalServices()[i].getServicePrice());
 
     }
-
-    public void increaseSalary() {
-        LocalDate today = LocalDate.now();
-
-        for (Doctor doctor : doctors) {
-            int yearsWorked = today.getYear() - doctor.getHireDate().getYear();
-
-            if (yearsWorked >= 1) {
-                double newSalary = doctor.getSalary() * 1.1;
-                doctor.setSalary(newSalary);
-                System.out.println("Salary increased for Dr. " + doctor.getFirstName() + " " + doctor.getLastName() + " to: " + newSalary);
-            }
-        }
-    }
-
-    public void addPatient(Patient patient) {
-        patients.add(patient);
-    }
-
 
     public void appointmentReschedule(String patientName, String doctorName, LocalDate appointmentDate, LocalDate rescheduleDate, LocalTime rescheduleTime) {
 
@@ -511,15 +483,19 @@ public class Service {
     }
 
     public void patientMoney() {
-        double totalMoney = 0;
+        double totalMoneyPatients = 0;
         double serviceMoney = 0;
+        double totalAppointmentsIncome = 0;
         for (Appointment appointment : appointments) {
             if (LocalDate.now().getYear() == appointment.getAppointmentDate().getYear()) {
                 serviceMoney = appointment.getMedicalService().getServicePrice();
-                totalMoney += appointment.getPatient().calculateBill(serviceMoney);
+                totalMoneyPatients += appointment.getPatient().calculateBill(serviceMoney);
+                totalAppointmentsIncome += appointment.getMedicalService().getServicePrice();
+
             }
         }
-        System.out.println("Total money from patients this year is: " + totalMoney);
+        System.out.println("Total money from patients this year is: " + totalMoneyPatients);
+        System.out.println("Total money from appointments " + totalAppointmentsIncome);
     }
 
     public void deleteAppointment(Appointment appointment) {
@@ -533,7 +509,118 @@ public class Service {
         }
     }
 
+    public void generateInvoice(long appointmentId) {
+        Appointment apt = findAppointment(appointmentId);
+        if (apt == null) {
+            System.out.println("Appointment not found");
+            return;
+        }
+        double toPay = apt.getPatient().calculateBill(apt.getMedicalService().getServicePrice());
+        StringBuilder sb = new StringBuilder();
+        sb.append("Invoice for appointment: " + appointmentId + "\n" + "Date: " + apt.getAppointmentDate() + "\n" + "Medical service: " + apt.getMedicalService().getServiceName() + "\n"
+        + "Price without discount: " + apt.getMedicalService().getServicePrice() + "\n" + "Amount to pay " + toPay + "\n") ;
 
+        System.out.println(sb);
+    }
+
+    public void addPatient(){
+        Scanner s = new Scanner(System.in);
+        try {
+            System.out.println("Enter patient data: ");
+            System.out.println("Enter first name: ");
+            String fName = s.nextLine();
+            System.out.println("Enter last name: ");
+            String lName = s.nextLine();
+            System.out.println("Enter personalId: ");
+            String personalId = s.nextLine();
+            System.out.println("Enter email: ");
+            String email = s.nextLine();
+            System.out.println("Enter phone number: ");
+            String phoneNumber = s.nextLine();
+            System.out.println("Enter birth date: ");
+            String birthDate = s.nextLine();
+            LocalDate bDate = LocalDate.parse(birthDate);
+
+            String text = "...";
+            List<String> allergies = new ArrayList<>();
+            while (!text.equalsIgnoreCase("q")) {
+                System.out.println("Enter allergies: ");
+                text = s.nextLine();
+                if (!text.equalsIgnoreCase("q")) {
+                    allergies.add(text);
+                }
+            }
+
+            text = "...";
+            List<String> chronicConditions = new ArrayList<>();
+            while (!text.equalsIgnoreCase("q")) {
+                System.out.println("Enter chronic conditions: ");
+                text = s.nextLine();
+                if (!text.equalsIgnoreCase("q")) {
+                    chronicConditions.add(text);
+                }
+            }
+
+            text = "...";
+            List<String> physicalRestrictions = new ArrayList<>();
+            while (!text.equalsIgnoreCase("q")) {
+                System.out.println("Enter physicalRestrictions: ");
+                text = s.nextLine();
+                if (!text.equalsIgnoreCase("q")) {
+                    chronicConditions.add(text);
+                }
+            }
+
+            MedicalRecord medRec = new MedicalRecord(allergies, chronicConditions, physicalRestrictions);
+            System.out.println("Enter patient type adult/child/member: ");
+            String patientType = s.nextLine();
+
+            Object[] obj = new Object[3];
+            switch (patientType) {
+                case "child" -> {
+                    System.out.println("Enter guardian name: ");
+                    obj[0] = s.nextLine();
+                    System.out.println("Enter guardian id: ");
+                    obj[1] = s.nextLine();
+                }
+                case "adult" -> {
+                    System.out.println("Enter type of health insurance PUBLIC/UNINSURED ");
+                    obj[0] = HealthInsurance.valueOf(s.nextLine());
+                }
+                case "member" -> {
+                    System.out.println("Enter membership number");
+                    obj[0] = s.nextLine();
+                    System.out.println("Enter membership type: ");
+                    obj[1] = Membership.valueOf(s.nextLine());
+                }
+                default -> {
+                    System.out.println("Invalid type of patient");
+                    return;
+                }
+            }
+
+            PatientFactory patFactory = new PatientFactory();
+            Patient patient = patFactory.createPatient(patientType, 0, fName, lName, personalId, email, phoneNumber, bDate, medRec, obj);
+
+            if(patient == null) {
+                System.out.println("The data is not correct try again.");
+                return;
+            }
+
+            PatientService patientService = new PatientService();
+            patientService.create(patient);
+
+            loadDataFromDatabase();
+
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void viewPatientData(String firstName, String lastName) {
+        Patient patient = findPatient(firstName + " " +lastName);
+        patient.displayInformation();
+    }
 
 }
 

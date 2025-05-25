@@ -37,21 +37,21 @@ public final class MedicalRecord {
         if (allergies != null) {
             System.out.println("Allergies: ");
             for (String allergy : allergies) {
-                System.out.println(allergy);
+                System.out.printf(allergy + ", ");
             }
         }
 
         if (chronicConditions != null) {
-            System.out.println("Chronic Conditions: ");
+            System.out.println("\nChronic Conditions: ");
             for (String chronicCondition : chronicConditions) {
-                System.out.println(chronicCondition);
+                System.out.printf(chronicCondition +", ");
             }
         }
 
         if (physicalRestrictions != null) {
-            System.out.println("Physical Restrictions: ");
+            System.out.println("\nPhysical Restrictions: ");
             for (String restriction : physicalRestrictions) {
-                System.out.println(restriction);
+                System.out.printf(restriction +", ");
             }
         }
 
