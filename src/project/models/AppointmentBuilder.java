@@ -12,7 +12,6 @@ public class AppointmentBuilder implements Builder {
     private LocalTime startTime;
     private MedicalServices medicalService;
     private Diagnostic diagnostic;
-    private double invoiceAmount;
 
     public AppointmentBuilder() {
         this.appointment= new Appointment();
@@ -48,11 +47,6 @@ public class AppointmentBuilder implements Builder {
     @Override
     public void setDiagnostic(Diagnostic diagnostic) {
         this.diagnostic = diagnostic;
-    }
-
-    @Override
-    public void setInvoiceAmount(double invoiceAmount){
-        this.invoiceAmount = invoiceAmount;
     }
 
     @Override

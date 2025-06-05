@@ -11,6 +11,5 @@ public interface Builder {
     void setStartTime(LocalTime startTime);
     void setMedicalServices(MedicalServices medicalServices);
     void setDiagnostic(Diagnostic diagnostic);
-    void setInvoiceAmount(double invoiceAmount);
     Appointment build();
 }

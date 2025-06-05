@@ -6,6 +6,7 @@ import project.serviceDB.AppointmnetService;
 import project.serviceDB.DoctorService;
 import project.serviceDB.PatientService;
 
+import javax.print.Doc;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -13,18 +14,7 @@ import java.util.*;
 public class Service {
     private static Service controller = null;
 
-    private List<Appointment> appointments;
-    private Set<Doctor> doctors;
-    private Set<Patient> patients;
-
-    private Service() {
-        this.appointments = new ArrayList<>();
-        this.doctors = new HashSet<>();
-        this.patients = new HashSet<>();
-        loadDataFromDatabase();
-        System.out.println("Doctors loaded: " + doctors.size());
-        System.out.println("Patients loaded: " + patients.size());
-    }
+    private Service() { }
 
     public static synchronized Service getInstance() {
         if (controller == null)
@@ -32,22 +22,32 @@ public class Service {
         return controller;
     }
 
-    private void loadDataFromDatabase() {
-        PatientService patServ = new PatientService();
-        DoctorService docServ = new DoctorService();
+    private List<Appointment> loadAppointments(){
         AppointmnetService appointmnetServ = new AppointmnetService();
-
-        this.appointments = appointmnetServ.getAll();
-        this.doctors = docServ.getAll();
-        this.patients = patServ.getAll();
-
+        return appointmnetServ.getAll();
     }
 
+    private Set<Doctor> loadDoctors(){
+        DoctorService doctorServ = new DoctorService();
+        return doctorServ.getAll();
+    }
+
+    private Set<Patient> loadPatients(){
+        PatientService patientServ = new PatientService();
+        return patientServ.getAll();
+    }
+
+
     public Appointment findAppointment(long appointmentId) {
+        List<Appointment> appointments = loadAppointments();
         return appointments.stream().filter(appointment -> appointment.getId() == appointmentId).findFirst().orElse(null);
     }
 
     public void addAppointment(Appointment appointment) {
+        List<Appointment> appointments = loadAppointments();
+        Set<Doctor> doctors = loadDoctors();
+        Set<Patient> patients = loadPatients();
+
         try {
             for (Appointment app : appointments) {
                 if (app.equals(appointment)) {
@@ -63,9 +63,6 @@ public class Service {
                 throw new AppointmentException("Patient doesn't exist");
             }
 
-            if(appointment.getDoctor().getSchedule() == null){
-                System.out.println("E nulllllll");
-            }
 
             int appointmentDay = appointment.getAppointmentDate().getDayOfWeek().getValue() - 1;
             TimeInterval[] doctorSchedule = appointment.getDoctor().getSchedule().getSchedule()[appointmentDay];
@@ -190,11 +187,14 @@ public class Service {
     }
 
     public List<Appointment> sortAppointments() {
+        List<Appointment> appointments = loadAppointments();
         appointments.sort(Comparator.comparing(Appointment::getAppointmentDate));
         return appointments;
     }
 
     public void allPatientAppointments(String firstName, String lastName) {
+        List<Appointment> appointments = loadAppointments();
+        Set<Patient> patients = loadPatients();
         sortAppointments();
 
         StringBuilder sb = new StringBuilder();
@@ -227,6 +227,7 @@ public class Service {
     }
 
     public Doctor findDoctor(String doctorName) {
+        Set<Doctor> doctors = loadDoctors();
         for (Doctor d : doctors) {
             if ((d.getFirstName() + " " + d.getLastName()).equalsIgnoreCase(doctorName)) {
                 return d;
@@ -237,6 +238,7 @@ public class Service {
     }
 
     public Patient findPatient(String patientName) {
+        Set<Patient> patients = loadPatients();
         for (Patient p : patients) {
             if ((p.getFirstName() + " " + p.getLastName()).equalsIgnoreCase(patientName)) {
                 return p;
@@ -256,6 +258,7 @@ public class Service {
     }
 
     public void viewAppointments(Doctor doctor) {
+        List<Appointment> appointments = loadAppointments();
         sortAppointments();
         StringBuilder sb = new StringBuilder();
         System.out.println("\nThe appoinments for doctor " + doctor.getFirstName() + " " + doctor.getLastName() + " are:");
@@ -275,6 +278,7 @@ public class Service {
     }
 
     public void doctorsSpecialty(String specialty) {
+        Set<Doctor> doctors = loadDoctors();
         StringBuilder sb = new StringBuilder();
 
         System.out.println("Doctors for the " + specialty + " specialty: ");
@@ -294,6 +298,7 @@ public class Service {
 
     public void specialtyMedicalServices(String specialty) {
         Specialty spec = null;
+        Set<Doctor> doctors = loadDoctors();
         for (Doctor doctor : doctors) {
             if (doctor.getSpecialty().getSpecialtyName().equals(specialty)) {
                 spec = doctor.getSpecialty();
@@ -310,10 +315,9 @@ public class Service {
     }
 
     public void appointmentReschedule(String patientName, String doctorName, LocalDate appointmentDate, LocalDate rescheduleDate, LocalTime rescheduleTime) {
-
+        List<Appointment> appointments = loadAppointments();
         boolean appointmentFound = false;
         Appointment appointment = null;
-
 
         if (rescheduleDate.isBefore(LocalDate.now())) {
             System.out.println("The reschedule date is in the past, can't reschedule the appointment");
@@ -388,6 +392,7 @@ public class Service {
     }
 
     public void profitDoctor() {
+        List<Appointment> appointments = loadAppointments();
         if (appointments.isEmpty()) {
             System.out.println("No appointments found ");
             return;
@@ -437,6 +442,8 @@ public class Service {
 
     public void planAppointment(String specialtyName, LocalDate startInterval, LocalDate endInterval) {
         StringBuilder sb = new StringBuilder();
+        Set<Doctor> doctors = loadDoctors();
+
         List<Doctor> potentialDoctors = new ArrayList<>();
         boolean existsDoctor = false;
         for (Doctor doctor : doctors) {
@@ -483,6 +490,7 @@ public class Service {
     }
 
     public void patientMoney() {
+        List<Appointment> appointments = loadAppointments();
         double totalMoneyPatients = 0;
         double serviceMoney = 0;
         double totalAppointmentsIncome = 0;
@@ -499,6 +507,7 @@ public class Service {
     }
 
     public void deleteAppointment(Appointment appointment) {
+        List<Appointment> appointments = loadAppointments();
         if(appointment.getAppointmentDate().isAfter(LocalDate.now()) && appointment.getDiagnostic() == null) {
             AppointmnetService appointmnetService = new AppointmnetService();
             appointmnetService.delete(appointment.getId());
@@ -609,8 +618,6 @@ public class Service {
 
             PatientService patientService = new PatientService();
             patientService.create(patient);
-
-            loadDataFromDatabase();
 
         } catch (RuntimeException e) {
             throw new RuntimeException(e);

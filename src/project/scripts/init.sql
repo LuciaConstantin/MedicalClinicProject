@@ -46,8 +46,6 @@ CREATE TABLE member_patients
     FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE
 );
 
-
-
 CREATE TABLE medical_service
 (
     id            BIGSERIAL PRIMARY KEY,

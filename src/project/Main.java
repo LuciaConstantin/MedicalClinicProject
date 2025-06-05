@@ -4,7 +4,6 @@ import project.models.*;
 import project.service.Service;
 import project.service.ServiceCSV;
 
-
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,25 +21,25 @@ public class Main {
         StringBuilder sb = new StringBuilder();
 
         while (true) {
-            sb.append("\nEnter number or write 'exit' to quit exit\n" +
-                    "1. Add appointment \n" +
-                    "2. View appointments for a specific doctor \n" +
-                    "3. Add diagnostic and treatments for an appointment\n" +
-                    "4. View all the doctors that have a specific specialty\n " +
-                    "5. View all the medical services for a specific specialty \n" +
-                    "6. View all the appointments of a patient, diagnostic and treatments\n" +
-                    "7. Appointment reschedule\n" +
-                    "8. Increase the salary of the doctor who generated the highest profit last year\n" +
-                    "9. View the schedule for a specific doctor\n" +
-                    "10. Plan an appointment\n" +
-                    "11. Sum of all payments made by patients this year\n" +
-                    "12. Delete a future appointment\n" +
-                    "13. Generate invoice for appointment\n" +
-                    "14. Add patient\n" +
-                    "15. View all patient data");
-            System.out.println(sb);
+            System.out.println("Enter number or write 'exit' to quit");
+            System.out.println("1. Add appointment");
+            System.out.println("2. View appointments for a specific doctor");
+            System.out.println("3. Add diagnostic and treatments for an appointment");
+            System.out.println("4. View all the doctors that have a specific specialty");
+            System.out.println("5. View all the medical services for a specific specialty");
+            System.out.println("6. View all the appointments of a patient, diagnostic and treatments");
+            System.out.println("7. Appointment reschedule");
+            System.out.println("8. Increase the salary of the doctor who generated the highest profit last year.");
+            System.out.println("9. View the schedule for a specific doctor");
+            System.out.println("10. Plan an appointment");
+            System.out.println("11. Sum of all payments made by patients this year.");
+            System.out.println("12. Delete a future appointment ");
+            System.out.println("13. Generate invoice for appointment ");
+            System.out.println("14. Add patient");
+            System.out.println("15. View all patient data");
 
             input = s.nextLine();
+
 
             if (input.equalsIgnoreCase("exit")) {
                 break;
